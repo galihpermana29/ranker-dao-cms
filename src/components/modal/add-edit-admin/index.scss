@@ -1,0 +1,116 @@
+.add-admin {
+  text-align: center;
+  margin: 20px 0;
+
+  .input {
+    max-width: 300px;
+    text-align: center;
+
+    &.add-password {
+      background: #f5f5f5;
+
+      .css-dev-only-do-not-override-1me4733 {
+        background: #f5f5f5;
+        text-align: center;
+      }
+    }
+  }
+
+  .modal-title {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 24px;
+    margin-bottom: 15px;
+    color: #1f2326;
+  }
+
+  .modal-title2 {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 12px;
+
+    color: #000000;
+  }
+
+  .form-wrapper {
+    margin-top: 30px;
+    padding: 0 60px;
+
+    .label {
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 17px;
+      margin: 5px 0 !important;
+      color: #1f2326;
+      // border: 1px solid red;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 20px 0;
+
+      .address-input {
+        // background: #f5f5f5;
+        // border: 1px solid #b8b8b8;
+        border-radius: 2px;
+
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 9px;
+        line-height: 11px;
+        color: #000000;
+      }
+
+      .button {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 8px;
+        text-align: center;
+        height: initial;
+        border-radius: initial;
+        width: 60px;
+        padding: 2px 12px !important;
+        color: #ffffff;
+      }
+    }
+    .add-input {
+      margin: 20px 0;
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 10px;
+      line-height: 12px;
+      color: #7b7b7b;
+      cursor: pointer;
+    }
+
+    .select-add {
+      max-width: 300px;
+      .ant-select-selector {
+        background: #f5f5f5;
+        border: 1px solid #b8b8b8;
+        border-radius: 8px;
+        height: 42px;
+        width: 100%;
+        color: black;
+        text-transform: uppercase;
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        width: 100%;
+      }
+    }
+  }
+}

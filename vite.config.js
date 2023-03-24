@@ -17,4 +17,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+
+  //set cookies with proxy
+  server: {
+    proxy: {
+      '/dev': {
+        target: 'https://staging-api-shop.rankerdao.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/dev/, ''),
+      },
+    },
+  },
 });

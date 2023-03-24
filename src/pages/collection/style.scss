@@ -1,0 +1,208 @@
+.detail-shop-wrapper {
+  padding: 0 20px;
+  @media only screen and (min-width: 900px) {
+    padding: 0 120px;
+  }
+  .header-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    margin-top: 100px;
+
+    @media only screen and (min-width: 900px) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-direction: row;
+    }
+
+    .logo-wrapper {
+      flex-grow: 1;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      img {
+        max-height: 100px;
+        @media only screen and (min-width: 900px) {
+          max-height: 180px;
+        }
+      }
+    }
+
+    .filter {
+      display: flex;
+      flex-direction: column;
+      max-width: 500px;
+      width: 100%;
+
+      input {
+        width: 100% !important;
+        max-width: 500px;
+      }
+
+      .button-wrapper {
+        display: flex;
+        gap: 7px;
+        margin-top: 15px;
+        width: 100%;
+
+        &.edit {
+          @media only screen and (min-width: 900px) {
+            margin-top: 0;
+          }
+        }
+        .button {
+          cursor: pointer;
+          flex-grow: 1;
+          &.hidden {
+            display: none;
+          }
+
+          &.add-collection-button{
+            font-size: 12px;
+            text-align: center;
+          }
+        }
+
+        .sort {
+          width: 100%;
+          position: relative;
+
+          .list {
+            text-align: center;
+            background-color: #1f2326;
+            color: white;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 34px;
+            padding: 10px 0;
+            display: none;
+
+            &.show {
+              display: initial;
+            }
+
+            .list-item {
+              font-family: 'Montserrat';
+              font-style: normal;
+              font-weight: 700;
+              font-size: 11px;
+              line-height: 13px;
+              text-align: center;
+              color: #fefefe;
+              padding: 8px 15px;
+              cursor: pointer;
+
+              &:hover {
+                border-bottom: 1px solid white;
+              }
+            }
+          }
+        }
+      }
+
+      &.edit {
+        @media only screen and (min-width: 900px) {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          max-width: 710px;
+        }
+      }
+    }
+  }
+
+  .body-wrappers {
+    margin-top: 60px;
+  }
+
+  .edit-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    @media only screen and (min-width: 700px) {
+      flex-direction: row;
+      align-items: initial;
+      justify-content: space-between;
+    }
+
+    .edit-section {
+      flex-grow: 1;
+      width: 100%;
+      max-width: 300px;
+      margin-top: 60px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+
+      align-items: center;
+
+      .edit-title {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 39px;
+        color: #1f2326;
+
+        margin-bottom: 20px;
+      }
+
+      .card-image {
+        width: 251px;
+        height: 251px;
+        background-color: gray;
+      }
+
+      .text-desc {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 15px;
+        margin: 20px 0;
+        color: #7b7b7b;
+
+        div {
+          margin-top: 5px;
+        }
+      }
+      .address-title {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 17px;
+        color: #1f2326;
+        margin: 20px 0;
+      }
+
+      .input {
+        max-width: 238px !important;
+      }
+
+      .button {
+        max-width: 160px !important;
+        font-size: 11px;
+        margin-top: 20px;
+
+        &.update {
+          margin-top: 40px;
+        }
+      }
+    }
+
+    .product-section {
+      @media only screen and (min-width: 700px) {
+        grid-template-columns: repeat(2, max-content);
+      }
+      @media only screen and (min-width: 1000px) {
+        grid-template-columns: repeat(3, max-content);
+      }
+    }
+  }
+}
