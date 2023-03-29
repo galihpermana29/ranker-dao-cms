@@ -5,10 +5,8 @@ export const AuthContext = createContext();
 
 const AuthContextProvider = ({ children }) => {
   const handleLogin = async (payload) => {
-    console.log(payload, 'function');
     try {
-      const data = await cmsAPI.login(payload);
-      console.log(data, 'data from login');
+      await cmsAPI.login(payload);
     } catch (error) {
       window.onerror = function (err, file, line) {
         logError(
@@ -24,7 +22,9 @@ const AuthContextProvider = ({ children }) => {
     }
   };
   return (
-    <AuthContext.Provider value={{ handleLogin }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ handleLogin }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 

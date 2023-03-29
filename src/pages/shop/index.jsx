@@ -5,10 +5,16 @@ import { Modal } from '@/components/modal';
 import { useEffect, useState } from 'react';
 import AddCollection from '@/components/modal/add-collection';
 import cmsAPI from '@/api/cms';
+import { useStoreGamesData } from '@/state';
+import { imageBaseUrl } from '@/utils';
 
 const OurShop = () => {
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const loc = window.location.pathname.split('/')[1];
+  const [gamesData, setGamesData] = useStoreGamesData((state) => [
+    state.gamesData,
+    state.setGamesData,
+  ]);
 
   const modalTypeDict = {
     addCollection: <AddCollection />,
@@ -20,7 +26,7 @@ const OurShop = () => {
         const {
           data: { data },
         } = await cmsAPI.getAllGames();
-        console.log(data, 'data games');
+        setGamesData(data);
       } catch (error) {
         console.log(error, 'error while getting data games');
       }
@@ -44,7 +50,7 @@ const OurShop = () => {
       </div>
 
       <div className="content-wrapper">
-        {DUMMY_DATA.map((data, idx) => (
+        {gamesData.map((data, idx) => (
           <Link
             to={`${
               loc === 'collection'
@@ -54,7 +60,7 @@ const OurShop = () => {
             key={idx}
             className="card-shop">
             <div>
-              <img src={data.thum} alt="thumbnail" />
+              <img src={imageBaseUrl(data.thumbnail_url)} alt="thumbnail" />
             </div>
             <div className="title">{data.title}</div>
           </Link>

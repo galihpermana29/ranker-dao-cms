@@ -40,44 +40,51 @@ const dataSource = [
   },
 ];
 
-export const CustomTable = () => {
-  const columns = [
-    {
-      title: 'No',
-      dataIndex: 'no',
-      key: 'no',
-    },
-    {
-      title: 'Collection ID',
-      dataIndex: 'collectionId',
-      key: 'no',
-    },
-    {
-      title: 'Game',
-      dataIndex: 'game',
-      key: 'no',
-    },
-    {
-      title: 'Date Uploaded',
-      dataIndex: 'dateUploaded',
-      key: 'no',
-    },
-    {
-      title: 'Date Updated',
-      dataIndex: 'dateUpdated',
-      key: 'no',
-    },
-    {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'no',
-    },
-    {
-      title: 'Action',
-      dataIndex: 'Action',
-      key: 'no',
-      render: () => <button className="button">DELETE</button>,
-    },
-  ];
-  return <Table dataSource={dataSource} columns={columns} className="table" />;
+const dummyCol = [
+  {
+    title: 'No',
+    dataIndex: 'no',
+    key: 'no',
+  },
+  {
+    title: 'Collection ID',
+    dataIndex: 'collectionId',
+    key: 'no',
+  },
+  {
+    title: 'Game',
+    dataIndex: 'game',
+    key: 'no',
+  },
+  {
+    title: 'Date Uploaded',
+    dataIndex: 'dateUploaded',
+    key: 'no',
+  },
+  {
+    title: 'Date Updated',
+    dataIndex: 'dateUpdated',
+    key: 'no',
+  },
+  {
+    title: 'Price',
+    dataIndex: 'price',
+    key: 'no',
+  },
+  {
+    title: 'Action',
+    dataIndex: 'Action',
+    key: 'no',
+    render: () => <button className="button">DELETE</button>,
+  },
+];
+
+export const CustomTable = ({
+  columns = dummyCol,
+  data = dataSource,
+  ...props
+}) => {
+  return (
+    <Table dataSource={data} columns={columns} {...props} className="table" />
+  );
 };

@@ -6,10 +6,10 @@ import {
   EnterVerifCode,
 } from '@/components/login/modal';
 import { Modal } from '@/components/modal';
-import SuccessResetPassword from '@/components/modal/rewarding';
+import { SuccessResetPassword } from '@/components/modal/rewarding';
 import { AuthContext } from '@/providers/AuthProviders';
 import { Form } from 'antd';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import './index.scss';
@@ -21,14 +21,12 @@ const Login = () => {
 
   const handleSubmitFormLogin = async (value) => {
     try {
-      handleLogin(value);
+      await handleLogin(value);
       navigate('/collection');
     } catch (error) {
       console.log(error, 'err');
     }
   };
-
-  const handleModal = () => {};
 
   const modalTypeDict = {
     enterEmail: (
@@ -80,7 +78,7 @@ const Login = () => {
               placeholder="email"
             />
           </Form.Item>
-          <Form.Item name={'pass'} noStyle>
+          <Form.Item name={'password'} noStyle>
             <input
               type="password"
               name="password"
