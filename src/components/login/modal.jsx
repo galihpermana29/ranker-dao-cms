@@ -3,9 +3,9 @@ import './style.scss';
 
 /**
  *
- * @param {function} onSubmit - function clicked on entering email
- * @returns
+ * @property {React.HTMLProps<HTMLButtonElement>['onFinish']} [onSubmit]
  */
+
 export const EnterEmail = ({ onSubmit }) => {
   return (
     <div className="staking-modal enter-email-modal">
@@ -31,6 +31,10 @@ export const EnterEmail = ({ onSubmit }) => {
   );
 };
 
+/**
+ *
+ * @property {React.HTMLProps<HTMLButtonElement>['onFinish']} [onSubmit]
+ */
 export const EnterVerifCode = ({ onSubmit }) => {
   return (
     <div className="staking-modal enter-email-modal">
@@ -68,8 +72,7 @@ export const EnterVerifCode = ({ onSubmit }) => {
 
 /**
  *
- * @param {function} onSubmit - function clicked on entering email
- * @returns
+ * @property {React.HTMLProps<HTMLButtonElement>['onFinish']} [onSubmit]
  */
 export const EnterPassword = ({ onSubmit }) => {
   return (
