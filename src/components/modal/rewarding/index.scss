@@ -1,0 +1,29 @@
+.reward-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  .title-reward {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 24px;
+    text-align: center;
+    margin-top: 7px;
+    color: #1f2326;
+  }
+
+  .desc-reward {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+
+    color: #000000;
+  }
+}

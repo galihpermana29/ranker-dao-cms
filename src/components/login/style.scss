@@ -1,0 +1,42 @@
+.enter-email-modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 50px;
+
+  .title-modal {
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .p-modal {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .form-wrapper-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .input {
+      width: 300px;
+    }
+
+    .button {
+      margin-top: 25px;
+      width: 240px;
+    }
+
+    .form-code-otp {
+      display: flex;
+      margin-bottom: 0 !important;
+      input {
+        max-width: 40px !important;
+        margin-left: 10px;
+      }
+    }
+  }
+}

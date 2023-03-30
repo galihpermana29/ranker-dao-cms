@@ -1,0 +1,58 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .login-title {
+    max-width: min-content;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .p {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 50px;
+
+    @media only screen and (min-width: 768px) {
+      font-size: 18px;
+    }
+  }
+
+  .form-wrapper {
+    max-width: 238px;
+
+    input {
+      margin-bottom: 20px;
+    }
+
+    .wrapper-check {
+      display: flex;
+      justify-content: space-between;
+
+      .remember {
+        display: flex;
+
+        label {
+          font-family: 'Montserrat';
+          font-style: normal;
+          font-weight: 600;
+          font-size: 7px;
+          margin-left: 5px;
+        }
+      }
+      .forgot {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 7px;
+        text-decoration-line: underline;
+        cursor: pointer;
+      }
+    }
+  }
+}

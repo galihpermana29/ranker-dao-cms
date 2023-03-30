@@ -1,0 +1,55 @@
+.admin-wrapper {
+  padding: 0 20px;
+  margin-top: 50px;
+  @media only screen and (min-width: 900px) {
+    padding: 0 120px;
+  }
+  .active-wrapper {
+    .header {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      @media only screen and (min-width: 700px) {
+        flex-direction: row;
+      }
+
+      .title {
+        flex-grow: 1;
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 39px;
+        color: #1f2326;
+      }
+
+      .filter-active {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-direction: column;
+        width: 100%;
+
+        @media only screen and (min-width: 700px) {
+          flex-direction: row;
+          width: initial;
+        }
+
+        .input {
+          flex-grow: 1 !important;
+          width: 100% !important;
+          max-width: initial;
+          padding: 0 20px;
+        }
+
+        .button {
+          max-width: 200px;
+        }
+      }
+    }
+  }
+}

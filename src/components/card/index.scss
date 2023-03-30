@@ -1,0 +1,108 @@
+.item-card {
+  cursor: pointer;
+  border-radius: 10px;
+  max-width: max-content;
+  position: relative;
+  .uncheck {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+
+  .img-wrapper {
+    width: 222.87px;
+    height: 222.87px;
+    background-color: rgb(180, 179, 179);
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
+  .item-title {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 7px;
+  }
+
+  .item-id {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 18px;
+    margin-bottom: 18px;
+    color: #b8b8b8;
+  }
+  .price-title {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+    color: #1f2326;
+    margin-bottom: 12px;
+  }
+  .price-tag-wrapper {
+    display: flex;
+    align-items: center;
+    &.hidden {
+      display: none;
+    }
+
+    &.visible {
+      display: flex;
+      height: 40px;
+    }
+    .nominal {
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 600;
+      font-size: 18px;
+      line-height: 22px;
+      color: #3b3f41;
+      margin-left: 5px;
+    }
+  }
+
+  .edit-delete-wrapper {
+    display: flex;
+
+    &.hidden {
+      display: none;
+    }
+
+    &.visible {
+      display: flex;
+    }
+    .delete {
+      width: 100%;
+      background: #1f2326;
+      height: 40px;
+
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 20px;
+      color: white;
+      border: none;
+
+      border-bottom-left-radius: 10px;
+    }
+    .edit {
+      width: 100%;
+      background: #ffc700;
+      height: 40px;
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 20px;
+      color: white;
+      border: none;
+
+      border-bottom-right-radius: 10px;
+    }
+  }
+}

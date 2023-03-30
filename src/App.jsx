@@ -1,35 +1,30 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import reactLogo from '@/assets/imgs/react.svg';
+import Navbar from './components/navbar';
 
-import '@/App.scss';
+import AuthContextProvider from './providers/AuthProviders';
+import MainRoutes from './routes';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const loc = window.location.pathname;
 
+  useEffect(() => {
+    if (loc === '/') window.location.replace('/login');
+  }, []);
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    <AuthContextProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/*" element={<MainRoutes />} />
+          <Route
+            path="*"
+            element={<div> Not Found or You do not have permission.</div>}
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthContextProvider>
   );
 }
 
