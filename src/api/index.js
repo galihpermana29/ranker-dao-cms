@@ -21,30 +21,7 @@ const createAPI = (
     },
 
     (error) => {
-      if (
-        error.response?.status === 500 &&
-        error?.response?.data?.message === 'Token Not Valid'
-      ) {
-        console.log(error);
-      }
-
       console.log(error);
-
-      // if (error.response?.status === 401) {
-      //   if (typeof window === 'undefined') {
-      //     console.error('Unauthorized request');
-      //   } else {
-      //     window.location.href = '/login';
-      //   }
-      // }
-
-      if (
-        error?.response?.config?.method !== 'post' &&
-        error?.response?.config?.method !== 'put' &&
-        error?.response?.config?.method !== 'delete'
-      ) {
-        console.log(error, 'error');
-      }
 
       return Promise.reject(error);
     }
