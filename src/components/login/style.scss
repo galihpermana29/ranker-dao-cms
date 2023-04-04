@@ -7,13 +7,17 @@
   padding: 50px;
 
   .title-modal {
-    margin-bottom: 8px;
     text-align: center;
   }
 
   .p-modal {
-    margin-bottom: 20px;
+    margin: 10px 0;
     text-align: center;
+    font-size: 10px;
+
+    &.red {
+      color: red;
+    }
   }
 
   .form-wrapper-input {
