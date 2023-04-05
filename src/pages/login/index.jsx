@@ -18,6 +18,7 @@ const Login = () => {
   const { handleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const handleSubmitFormLogin = async (value) => {
     try {
@@ -28,24 +29,54 @@ const Login = () => {
     }
   };
 
+  const handleSubmitEmailForgotPassword = async (value) => {
+    try {
+      setIsOpenModal({
+        visible: true,
+        type: 'enterOTP',
+        data: { email: value.email },
+      });
+      await cmsAPI.forgotPasswordSendOTP(value);
+    } catch (error) {
+      console.log(error, 'error');
+    }
+  };
+
+  const handleOTPCode = async (value) => {
+    try {
+      await cmsAPI.sendingOTP({ otp: parseInt(value) });
+      setIsOpenModal({
+        visible: true,
+        type: 'enterSubmitPassword',
+        data: { otp: parseInt(value), email: isOpenModal.data.email },
+      });
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage(error.response.data.error.userMessage);
+      console.log(error.response.data.error.userMessage, 'err');
+    }
+  };
+
+  const handleChangePassword = async (value) => {
+    try {
+      await cmsAPI.changePassword(value);
+      setIsOpenModal({ visible: true, type: 'successResetPassword' });
+    } catch (error) {
+      console.log(error, 'error while changing the password');
+    }
+  };
+
   const modalTypeDict = {
-    enterEmail: (
-      <EnterEmail
-        onSubmit={() => setIsOpenModal({ visible: true, type: 'enterOTP' })}
-      />
-    ),
+    enterEmail: <EnterEmail onSubmit={handleSubmitEmailForgotPassword} />,
     enterOTP: (
-      <EnterVerifCode
-        onSubmit={() =>
-          setIsOpenModal({ visible: true, type: 'enterSubmitPassword' })
-        }
-      />
+      <EnterVerifCode onSubmit={handleOTPCode} errorMessage={errorMessage} />
     ),
     enterSubmitPassword: (
       <EnterPassword
-        onSubmit={() =>
-          setIsOpenModal({ visible: true, type: 'successResetPassword' })
-        }
+        onSubmit={handleChangePassword}
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        data={isOpenModal.data}
       />
     ),
     successResetPassword: <SuccessResetPassword />,
