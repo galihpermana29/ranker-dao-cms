@@ -7,6 +7,8 @@ import AddCollection from '@/components/modal/add-collection';
 import cmsAPI from '@/api/cms';
 import { useStoreGamesData } from '@/state';
 import { imageBaseUrl } from '@/utils';
+import { getNftWithSpecificAddress } from '@/api/alchemy';
+import { getNFTCollection } from '@/api/bsc-testnet';
 
 const OurShop = () => {
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
@@ -31,8 +33,15 @@ const OurShop = () => {
         console.log(error, 'error while getting data games');
       }
     };
-
+    getNftWithSpecificAddress('0xF97C7A13439DA91254B2D499685D52CC3E64E4EF');
     getAllGamesData();
+    getNFTCollection()
+      .then((nfts) => {
+        console.log(nfts);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }, []);
 
   return (
