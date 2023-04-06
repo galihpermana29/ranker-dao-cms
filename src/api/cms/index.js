@@ -20,12 +20,25 @@ function addAdminData(payload) {
   return api.post(`/register`, payload);
 }
 
+function forgotPasswordSendOTP(payload) {
+  return api.post('/forgot-password', payload);
+}
 
+function sendingOTP(payload) {
+  return api.post('/check-otp', payload);
+}
+
+function changePassword(payload) {
+  return api.post('/change-password-otp', payload);
+}
 const cmsAPI = {
-  login,
-  getAllGames,
-  getAllAdmins,
-  editAdminData,
   addAdminData,
+  changePassword,
+  editAdminData,
+  forgotPasswordSendOTP,
+  getAllAdmins,
+  getAllGames,
+  login,
+  sendingOTP,
 };
 export default cmsAPI;

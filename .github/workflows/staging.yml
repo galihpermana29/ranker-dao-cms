@@ -14,6 +14,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y python3-pip && \
+          sudo pip3 install awscli
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -34,3 +45,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           SOURCE_DIR: "dist/"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          # Create an invalidation for your CloudFront distribution
+          # using the AWS CLI or one of the AWS SDKs.
+
+          aws cloudfront create-invalidation \
+              --distribution-id E2L3K0QOCHWBU0 \
+              --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
