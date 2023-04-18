@@ -1,25 +1,98 @@
 import './style.scss';
-import { DUMMY_DATA } from './constant';
+
 import { Link } from 'react-router-dom';
 import { Modal } from '@/components/modal';
 import { useEffect, useState } from 'react';
 import AddCollection from '@/components/modal/add-collection';
+
 import cmsAPI from '@/api/cms';
-import { useStoreGamesData } from '@/state';
+
 import { imageBaseUrl } from '@/utils';
-import { getNftWithSpecificAddress } from '@/api/alchemy';
-import { getNFTCollection } from '@/api/bsc-testnet';
+import { useStoreGamesData } from '@/state';
+import {
+  FailCollectionRewarding,
+  SuccessCollectionRewarding,
+} from '@/components/modal/rewarding';
+import {
+  checkContractAddressName,
+  gettingTheContractMetaData,
+  mappingAddress,
+} from '@/utils/collectionsUtils';
 
 const OurShop = () => {
-  const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const loc = window.location.pathname.split('/')[1];
-  const [gamesData, setGamesData] = useStoreGamesData((state) => [
+
+  const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
+  const [contractMetadataError, setContractMetadataError] = useState(null);
+  const [
+    gamesData,
+    gamesOptionsForLabel,
+    setGamesData,
+    setGamesOptionsForLabel,
+  ] = useStoreGamesData((state) => [
     state.gamesData,
+    state.gamesOptionsForLabel,
     state.setGamesData,
+    state.setGamesOptionsForLabel,
   ]);
 
+  const hittingAPICollection = async (payload) => {
+    try {
+      await cmsAPI.createCollection(payload);
+      setIsOpenModal({ type: 'successCollection', visible: true });
+    } catch (error) {
+      setIsOpenModal({ type: 'failCollection', visible: true });
+    }
+  };
+
+  const handleCreateCollections = async (value) => {
+    try {
+      const { fields = [], game } = value;
+      if (fields.length === 0) {
+        setContractMetadataError('Contract Address Is Required!');
+        return;
+      }
+
+      const payloadForGettingTheContractName = mappingAddress(
+        fields,
+        setContractMetadataError
+      );
+      if (payloadForGettingTheContractName) {
+        const responsesFromAlchemy = await gettingTheContractMetaData(
+          payloadForGettingTheContractName
+        );
+        const payload = responsesFromAlchemy.map((d) => ({
+          name: checkContractAddressName(d.name),
+          address: d.address,
+          gameId: game,
+        }));
+        await hittingAPICollection(payload);
+      }
+    } catch (error) {
+      setContractMetadataError(error);
+    }
+  };
+
   const modalTypeDict = {
-    addCollection: <AddCollection />,
+    addCollection: (
+      <AddCollection
+        gameOptions={gamesOptionsForLabel}
+        onFinish={handleCreateCollections}
+        contractError={contractMetadataError}
+      />
+    ),
+    successCollection: (
+      <SuccessCollectionRewarding
+        title={'COLLECTION ADDED!'}
+        desc={'New collection category successfully added!'}
+      />
+    ),
+    failCollection: (
+      <FailCollectionRewarding
+        title={'UPDATE FAILED'}
+        desc={'Please try again or check your internet connection!'}
+      />
+    ),
   };
 
   useEffect(() => {
@@ -29,19 +102,12 @@ const OurShop = () => {
           data: { data },
         } = await cmsAPI.getAllGames();
         setGamesData(data);
+        setGamesOptionsForLabel(data);
       } catch (error) {
         console.log(error, 'error while getting data games');
       }
     };
-    getNftWithSpecificAddress('0xF97C7A13439DA91254B2D499685D52CC3E64E4EF');
     getAllGamesData();
-    getNFTCollection()
-      .then((nfts) => {
-        console.log(nfts);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   }, []);
 
   return (
@@ -59,7 +125,7 @@ const OurShop = () => {
       </div>
 
       <div className="content-wrapper">
-        {gamesData.map((data, idx) => (
+        {gamesData?.map((data, idx) => (
           <Link
             to={`${
               loc === 'collection'
@@ -86,7 +152,9 @@ const OurShop = () => {
             ADD COLLECTION
           </Link>
         ) : (
-          <Link className="button">ADD ITEM</Link>
+          <Link className="button" to={'/add-nft'}>
+            ADD ITEM
+          </Link>
         )}
       </div>
     </div>

@@ -16,7 +16,7 @@ export async function getNFTCollection() {
     `https://api.bscscan.com/api?module=account&action=tokennfttx&address=${walletAddress}&startblock=1&endblock=999999999&sort=asc&apikey=${apiKey}`
   );
   const txs = response.data.result;
-  console.log(txs, 'response api');
+  // console.log(txs, 'response api');
   const nfts = {};
 
   // Loop through all the NFT transactions and extract the collection name and token ID
@@ -24,7 +24,7 @@ export async function getNFTCollection() {
     const contractAddress = tx.contractAddress.toLowerCase();
     const tokenID = tx.tokenID;
     const collection = await getNFTCollectionName(contractAddress);
-    console.log(collection, 'collection');
+    // console.log(collection, 'collection');
     // Add the NFT to the collection object
     if (collection in nfts) {
       nfts[collection].push(tokenID);

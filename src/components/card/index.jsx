@@ -4,7 +4,14 @@ import check from '@/assets/img/check.png';
 import uncheck from '@/assets/img/uncheck.png';
 import './index.scss';
 
-const AddCard = ({ id, onClickCard, data, checkedStatus }) => {
+const checkImageUrl = (url = '') => {
+  const images = url.split('//');
+  if (images[0] === 'https:') return url;
+  else return 'https://ipfs.io/ipfs/' + images[1];
+};
+
+const AddCard = ({ onClickCard, data, checkedStatus }) => {
+  const { image, name, tokenId } = data;
   return (
     <div key={data.id} className="item-card" onClick={() => onClickCard(data)}>
       <img
@@ -13,10 +20,12 @@ const AddCard = ({ id, onClickCard, data, checkedStatus }) => {
         className="uncheck"
       />
 
-      <div className="img-wrapper"></div>
+      <div className="img-wrapper">
+        <img src={checkImageUrl(image)} alt="thumb" />
+      </div>
       <div>
-        <div className="item-title">{data.title}</div>
-        <div className="item-id">{data.id}</div>
+        <div className="item-title">{name}</div>
+        <div className="item-id">ITEM ID {tokenId.substring(0, 7)}</div>
       </div>
       <div className="price-title">Price</div>
       <div className={`price-tag-wrapper `}>
@@ -33,15 +42,18 @@ const AddCard = ({ id, onClickCard, data, checkedStatus }) => {
 };
 
 const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
+  const { image, name } = data;
   return (
     <div
       key={id}
       className="item-card"
       onMouseEnter={() => setShowEdit({ visible: true, id: id })}
       onMouseLeave={() => setShowEdit({ visible: false, id: -1 })}>
-      <div className="img-wrapper" onClick={onClickCard}></div>
+      <div className="img-wrapper" onClick={onClickCard}>
+        <img src={checkImageUrl(image)} alt="thumb" />
+      </div>
       <div onClick={onClickCard}>
-        <div className="item-title">AN ITEM</div>
+        <div className="item-title">{name}</div>
         <div className="item-id">ITEM ID XXXX</div>
       </div>
       <div className="price-title">Price</div>
@@ -88,23 +100,42 @@ const CardProduct = ({
   purpose = 'show',
   cart = [],
 }) => {
+  const newData = {
+    image: data.rawMetadata.image,
+    name: data.rawMetadata.name,
+    tokenId: data.tokenId,
+    tokenType: data.tokenType,
+    address: data.contract.address,
+    id,
+    price: '-',
+  };
   const [showEdit, setShowEdit] = useState(false);
 
   const addingToCart = (clickedData) => {
-    let idx = cart.findIndex((d) => d.id === clickedData.id);
+    let idx = cart.findIndex(
+      (d) => d.tokenId === clickedData.tokenId && d.name === clickedData.name
+    );
     if (idx < 0) {
       onClickCard((d) => [...d, clickedData]);
     } else {
-      const filteredCart = cart.filter((d) => d.id !== clickedData.id);
+      const filteredCart = cart.filter(
+        (d) => d.tokenId !== clickedData.tokenId && d.name !== clickedData.name
+      );
       onClickCard(filteredCart);
     }
   };
 
-  const isChecked = cart.findIndex((d) => d.id === data.id) < 0 ? false : true;
+  const isChecked =
+    cart.findIndex(
+      (d) => d.tokenId === newData.tokenId && d.name === newData.name
+    ) < 0
+      ? false
+      : true;
 
   if (purpose === 'show') {
     return (
       <ShowCard
+        data={newData}
         id={id}
         onClickCard={onClickCard}
         onEdit={onEdit}
@@ -117,7 +148,7 @@ const CardProduct = ({
       <AddCard
         id={id}
         onClickCard={addingToCart}
-        data={data}
+        data={newData}
         checkedStatus={isChecked}
       />
     );

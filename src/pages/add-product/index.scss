@@ -58,7 +58,7 @@
           top: 34px;
           padding: 10px 0;
           display: none;
-
+          z-index: 2;
           &.show {
             display: initial;
           }
@@ -120,10 +120,15 @@
         &:hover {
           color: black;
         }
+
+        &.active {
+          color: black;
+        }
       }
     }
 
     .content-card {
+      width: 75%;
       .body-wrapper {
         width: 75%;
         display: grid;
@@ -161,5 +166,23 @@
         }
       }
     }
+  }
+}
+
+.not-connected {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
+  
+  img{
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 25px !important;
+    max-width: 700px;
   }
 }

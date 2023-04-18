@@ -1,30 +1,25 @@
 import { Form, Input, Select } from 'antd';
 import './index.scss';
 
-const AddCollection = () => {
-  const onChange = (value) => {
-    console.log(`selected ${value}`);
-  };
-  const onSearch = (value) => {
-    console.log('search:', value);
-  };
+const AddCollection = ({ gameOptions = [], onFinish, contractError }) => {
+  const [form] = Form.useForm();
   return (
     <div className="add-collection">
       <div className="modal-title">ADD COLLECTION</div>
       <div className="modal-title2">ADD A CATEGORY FOR YOUR ITEMS</div>
-      <Form className="form-wrapper">
-        <div className="label">COLLECTION ID</div>
+      <Form form={form} className="form-wrapper" onFinish={onFinish}>
+        <div className="label">COLLECTION ADDRESS</div>
         <Form.List name="fields">
           {(fields, { add, remove }) => {
             return (
               <div>
                 {fields.map((field, index) => (
                   <div key={field.key} className="input-wrapper">
-                    <Form.Item
-                      noStyle
-                      name={[index, 'name']}
-                      rules={[{ required: true }]}>
-                      <Input placeholder="field name" className="input" />
+                    <Form.Item noStyle name={[index, 'name']}>
+                      <Input
+                        placeholder="COLLECTION ADDRESS"
+                        className="input"
+                      />
                     </Form.Item>
                     {fields.length > 1 ? (
                       <div
@@ -48,32 +43,18 @@ const AddCollection = () => {
             );
           }}
         </Form.List>
+        {contractError && <div className="add-input">{contractError}</div>}
         <div className="label">SELECT GAME</div>
-        <Form.Item>
+        <Form.Item name={'game'} rules={[{ required: true }]}>
           <Select
-            className=" select-add"
+            className="select-add"
             showSearch
-            placeholder="Select a person"
+            placeholder="SELECT GAME"
             optionFilterProp="children"
-            onChange={onChange}
-            onSearch={onSearch}
             filterOption={(input, option) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
-            options={[
-              {
-                value: 'jack',
-                label: 'Jack',
-              },
-              {
-                value: 'lucy',
-                label: 'Lucy',
-              },
-              {
-                value: 'tom',
-                label: 'Tom',
-              },
-            ]}
+            options={gameOptions}
           />
         </Form.Item>
         <Form.Item noStyle>

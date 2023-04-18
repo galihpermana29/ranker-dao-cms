@@ -2,4 +2,31 @@
   .table {
     margin-top: 10px;
   }
+
+  .select-add {
+    max-width: 300px;
+    .ant-select-selector {
+      background: #f5f5f5;
+      border: 1px solid #b8b8b8;
+      border-radius: 8px;
+      height: 42px;
+      width: 100%;
+      color: black;
+      text-transform: uppercase;
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 12px;
+      width: 100%;
+    }
+    .ant-select-selection-search-input {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ant-select-selection-item {
+      line-height: 40px !important;
+    }
+  }
 }

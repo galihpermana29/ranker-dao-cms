@@ -1,88 +1,77 @@
-import { useEffect, useState } from 'react';
-
-// import { ShopSelector } from './ShopSelector';
-
-import RankerCoinImg from '@/assets/img/shop/ranker-coin.png';
-
-import MetaGearImg from '@/assets/img/shop/metagear.png';
-import MetaGear1 from '@/assets/img/shop/metagear-1.png';
-import MetaGear2 from '@/assets/img/shop/metagear-2.png';
-import MetaGear3 from '@/assets/img/shop/metagear-3.png';
-import MetaGear4 from '@/assets/img/shop/metagear-4.png';
-import ApeironImg from '@/assets/img/shop/apeiron.png';
-import Apeiron1 from '@/assets/img/shop/apeiron-1.png';
-import Apeiron2 from '@/assets/img/shop/apeiron-2.png';
-import Apeiron3 from '@/assets/img/shop/apeiron-3.png';
-import Apeiron4 from '@/assets/img/shop/apeiron-4.png';
-
-import './style.scss';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import { DUMMY_DATA } from './constant';
-import CardProduct from '@/components/card';
+import { getNftWithSpecificAddress } from '@/api/alchemy';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useStoreNFTCollection } from '@/state';
+
 import { Modal } from '@/components/modal';
+import { useWalletContext } from '@/context/WalletContext';
+import CardProduct from '@/components/card';
 import ProductDetailModal from '@/components/modal/product-detail';
 
-const SHOP_GAME_LIST = {
-  apeiron: {
-    name: 'apeiron',
-    label: 'APEIRON',
-    img: ApeironImg,
-    description:
-      "Apeiron is the world's first ever god-game on the blockchain. Come uncover the mysteries of the Godiverse! Step into your role as a Wandering God and build up planets, explore celestial dungeons, and battle the forces of Chaos!",
-    imageList: [
-      { img: Apeiron1, title: 'FOONIE EMBLEMS', price: 0.0005 },
-      { img: Apeiron2, title: 'DOOD PLUSHIE', price: 0.0005 },
-      {
-        img: Apeiron3,
-        title: 'ORIGINS GUARDIANS APOSTLE MINT TICKET',
-        price: 0.0005,
-      },
-      { img: Apeiron4, title: 'FOONIE EMBLEMS', price: 0.0005 },
-    ],
-  },
-  metagear: {
-    name: 'metagear',
-    label: 'METAGEAR',
-    img: MetaGearImg,
-    description:
-      'MetaGear is a game that shows creativity in assembling robots to fight. You can visit other players’ garages, decorate and protect their garages by the surprise attack from other players!',
-    imageList: [
-      { img: MetaGear1, title: 'BRAKE DISC', price: 0.0005 },
-      { img: MetaGear2, title: 'BRAKE DISC 2', price: 0.0005 },
-      {
-        img: MetaGear3,
-        title: 'HEADLAMP',
-        price: 0.0005,
-      },
-      { img: MetaGear4, title: 'ARMORED HEADLAMP', price: 0.0005 },
-    ],
-  },
-};
-
+import './style.scss';
 const DetailShop = () => {
-  const [activeGame, setActiveGame] = useState('apeiron');
-  const [isHovered, setIsHovered] = useState({});
+  const { address, errors } = useWalletContext();
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const [showSort, setShowSort] = useState(false);
 
-  const { id } = useParams();
-  const [data, setData] = useState({ logo: '' });
+  const { gameId } = useParams();
   const navigate = useNavigate();
   const loc = window.location.pathname.split('/')[1];
-  const { logo } = data;
 
-  const onClickEdit = (id) => {
-    navigate(`/edit/${id}`);
+  const newLogo = DUMMY_DATA.filter((d) => d.id === parseInt(gameId));
+
+  const [activeCollections, setNftCollections, setActive] =
+    useStoreNFTCollection((state) => [
+      state.activeCollections,
+      state.setNftCollections,
+      state.setActive,
+    ]);
+
+  const onClickEdit = (ids) => {
+    navigate(`/edit/${gameId}/${ids}`);
   };
 
   const modalTypeDict = {
     productDetail: <ProductDetailModal />,
   };
 
+  const mappingNFTPerCollection = (data) => {
+    let collectionAdd = [];
+    let newCollection = [];
+
+    data.forEach((d) => {
+      if (collectionAdd.includes(d.contract.address)) return;
+      else collectionAdd.push(d.contract.address);
+    });
+
+    collectionAdd.forEach((d) => {
+      let nn = data.filter((x) => d === x.contract.address);
+      newCollection.push(nn);
+    });
+    setNftCollections(newCollection);
+    setActive('ALL');
+  };
+
   useEffect(() => {
-    let filtered = DUMMY_DATA.filter((datas) => datas.id === parseInt(id));
-    setData(filtered[0]);
-  }, [id]);
+    const getNFT = async () => {
+      // setLoading(true);
+      try {
+        const nfts = await getNftWithSpecificAddress(address);
+        mappingNFTPerCollection(nfts.ownedNfts);
+        // setLoading(false);
+      } catch (error) {
+        console.log(error, 'error when getting nft from the wallet account');
+      } finally {
+      }
+    };
+    if (address && errors !== 'WALLET MISSMATCHED') {
+      getNFT();
+    }
+    if (errors === 'WALLET MISSMATCHED') {
+      setIsOpenModal({ type: 'missmatched', visible: true });
+    }
+  }, [address, errors]);
 
   return (
     <div className="detail-shop-wrapper">
@@ -94,7 +83,7 @@ const DetailShop = () => {
       </Modal>
       <div className="header-filter">
         <div className="logo-wrapper">
-          <img src={logo} alt="logo" className="logo" />
+          <img src={newLogo[0].logo} alt="logo" className="logo" />
         </div>
         <div className={`filter ${loc === 'edit' ? 'edit' : ''}`}>
           <input type="text" className="input" />
@@ -141,27 +130,33 @@ const DetailShop = () => {
             <button className="button">GO BACK</button>
           </div>
           <div className="body-wrapper product-section">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((data, idx) => (
-              <CardProduct
-                id={data}
-                onEdit={onClickEdit}
-                onClickCard={() =>
-                  setIsOpenModal({ visible: true, type: 'productDetail' })
-                }
-              />
+            {activeCollections?.data?.map((data, idx) => (
+              <div key={idx}>
+                <CardProduct
+                  id={idx}
+                  onEdit={onClickEdit}
+                  onClickCard={() =>
+                    setIsOpenModal({ visible: true, type: 'productDetail' })
+                  }
+                  data={data}
+                />
+              </div>
             ))}
           </div>
         </div>
       ) : (
         <div className="body-wrapper">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((data, idx) => (
-            <CardProduct
-              id={data}
-              onEdit={onClickEdit}
-              onClickCard={() =>
-                setIsOpenModal({ visible: true, type: 'productDetail' })
-              }
-            />
+          {activeCollections?.data?.map((data, idx) => (
+            <div key={idx}>
+              <CardProduct
+                id={idx}
+                onEdit={onClickEdit}
+                onClickCard={() =>
+                  setIsOpenModal({ visible: true, type: 'productDetail' })
+                }
+                data={data}
+              />
+            </div>
           ))}
         </div>
       )}

@@ -4,6 +4,10 @@ function login(payload) {
   return api.post(`/login`, payload);
 }
 
+function logout(payload) {
+  return api.post(`/logout`, {});
+}
+
 function getAllGames() {
   return api.get('/games');
 }
@@ -31,14 +35,31 @@ function sendingOTP(payload) {
 function changePassword(payload) {
   return api.post('/change-password-otp', payload);
 }
+
+function createCollection(payload) {
+  return api.post(`/collections`, payload);
+}
+
+function getCollection(params) {
+  return api.get(`/collections?${params}`);
+}
+
+function getDetailAdmin(id) {
+  return api.get(`/admins/${id}`);
+}
+
 const cmsAPI = {
   addAdminData,
   changePassword,
+  createCollection,
   editAdminData,
+  getDetailAdmin,
   forgotPasswordSendOTP,
   getAllAdmins,
   getAllGames,
+  getCollection,
   login,
+  logout,
   sendingOTP,
 };
 export default cmsAPI;
