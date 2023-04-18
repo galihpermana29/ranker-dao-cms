@@ -49,7 +49,7 @@ const MainRoutes = () => {
       />
       <Route
         exact
-        path="/detail/:id"
+        path="/detail/:gameId/"
         element={
           <AuthenticatedGuardRoute>
             <DetailShop />
@@ -58,7 +58,7 @@ const MainRoutes = () => {
       />
       <Route
         exact
-        path="/edit/:id"
+        path="/edit/:gameId/:nftId"
         element={
           <AuthenticatedGuardRoute>
             <DetailShop />

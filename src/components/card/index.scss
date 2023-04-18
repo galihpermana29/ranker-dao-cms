@@ -15,6 +15,12 @@
     background-color: rgb(180, 179, 179);
     border-radius: 10px;
     margin-bottom: 15px;
+
+    img {
+      background-size: cover;
+      width: 100%;
+      border-radius: 10px;
+    }
   }
   .item-title {
     font-family: 'Montserrat';

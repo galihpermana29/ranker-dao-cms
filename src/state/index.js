@@ -2,7 +2,18 @@ import { create } from 'zustand';
 
 export const useStoreGamesData = create((set) => ({
   gamesData: [],
+  gamesOptionsForLabel: [],
   setGamesData: (data) => set((state) => (state.gamesData = data)),
+  setGamesOptionsForLabel: (data) =>
+    set((state) => {
+      const newMappingData = data.map((d) => {
+        return {
+          label: d.title,
+          value: d.id,
+        };
+      });
+      return (state.gamesOptionsForLabel = newMappingData);
+    }),
 }));
 
 /**
@@ -31,4 +42,32 @@ export const useStoreAdminData = create((set) => ({
     set((state) => ({
       inactiveParams: { ...state.inactiveParams, [key]: data },
     })),
+}));
+
+export const useStoreNFTCollection = create((set) => ({
+  nftCollections: [],
+  activeCollections: [],
+  setNftCollections: (data) =>
+    set((state) => {
+      return (state.nftCollections = data);
+    }),
+  setActive: (d) =>
+    set((state) => {
+      if (d !== 'ALL') {
+        return (state.activeCollections = {
+          data: state.nftCollections[parseInt(d)],
+          index: d,
+        });
+      } else {
+        let newArr = [];
+        state.nftCollections.forEach((x) => {
+          newArr.push(...x);
+        });
+        state.activeIndex = d;
+        return (state.activeCollections = {
+          data: newArr,
+          index: 'ALL',
+        });
+      }
+    }),
 }));
