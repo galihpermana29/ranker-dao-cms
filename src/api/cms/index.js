@@ -4,7 +4,7 @@ function login(payload) {
   return api.post(`/login`, payload);
 }
 
-function logout(payload) {
+function logout() {
   return api.post(`/logout`, {});
 }
 

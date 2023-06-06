@@ -67,11 +67,6 @@ const dummyCol = [
     key: 'no',
   },
   {
-    title: 'Price',
-    dataIndex: 'price',
-    key: 'no',
-  },
-  {
     title: 'Action',
     dataIndex: 'Action',
     key: 'no',
