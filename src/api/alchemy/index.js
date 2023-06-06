@@ -10,7 +10,6 @@ const alchemy = new Alchemy(config);
 export const getNftWithSpecificAddress = async (owner) => {
   // Get all NFTs
   const nfts = await alchemy.nft.getNftsForOwner(owner);
-  console.log(nfts, 'nfts');
   // Print NFTs
   return nfts;
 };

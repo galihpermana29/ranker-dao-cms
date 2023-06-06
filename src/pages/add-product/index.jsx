@@ -289,6 +289,7 @@ const AddProduct = () => {
       setLoading(true);
       try {
         const nfts = await getNftWithSpecificAddress(address);
+        console.log(nfts, 'nfts');
         mappingNFTPerCollection(nfts.ownedNfts);
         setLoading(false);
       } catch (error) {
