@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+
 import AuthenticatedGuardRoute from '@/components/guard-route/authenticated';
 import NotauthenticatedGuardRoute from '@/components/guard-route/notauthenticated';
 import AddProduct from '@/pages/add-product';

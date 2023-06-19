@@ -1,18 +1,18 @@
 import './style.scss';
 
-import { Link } from 'react-router-dom';
-import { Modal } from '@/components/modal';
 import { useEffect, useState } from 'react';
-import AddCollection from '@/components/modal/add-collection';
+
+import { Link } from 'react-router-dom';
 
 import cmsAPI from '@/api/cms';
-
-import { imageBaseUrl } from '@/utils';
-import { useStoreGamesData } from '@/state';
+import { Modal } from '@/components/modal';
+import AddCollection from '@/components/modal/add-collection';
 import {
   FailCollectionRewarding,
   SuccessCollectionRewarding,
 } from '@/components/modal/rewarding';
+import { useStoreGamesData } from '@/state';
+import { imageBaseUrl } from '@/utils';
 import {
   checkContractAddressName,
   gettingTheContractMetaData,
@@ -120,8 +120,25 @@ const OurShop = () => {
       </Modal>
       <div className="shop-title mt-5">
         <div className="my-4">
-          <div className="title text-center">our game partners</div>
+          <div className="title text-center">
+            {loc === 'collection' ? 'COLLECTION PAGE' : 'PRODUCT PAGE'}
+          </div>
         </div>
+      </div>
+      <div className="bottom-content">
+        {loc === 'collection' ? (
+          <Link
+            className="button"
+            onClick={() =>
+              setIsOpenModal({ visible: true, type: 'addCollection' })
+            }>
+            ADD COLLECTION
+          </Link>
+        ) : (
+          <Link className="button" to={'/add-nft'}>
+            ADD ITEM
+          </Link>
+        )}
       </div>
 
       <div className="content-wrapper">
@@ -140,22 +157,6 @@ const OurShop = () => {
             <div className="title">{data.title}</div>
           </Link>
         ))}
-      </div>
-
-      <div className="bottom-content">
-        {loc === 'collection' ? (
-          <Link
-            className="button"
-            onClick={() =>
-              setIsOpenModal({ visible: true, type: 'addCollection' })
-            }>
-            ADD COLLECTION
-          </Link>
-        ) : (
-          <Link className="button" to={'/add-nft'}>
-            ADD ITEM
-          </Link>
-        )}
       </div>
     </div>
   );
