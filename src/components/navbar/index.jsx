@@ -9,18 +9,16 @@ import { useWalletContext } from '@/context/WalletContext';
 const Navbar = () => {
   const { onConnect, connectors, disconnect, isConnected, address } =
     useWalletContext();
-
-  console.log(connectors, address);
   const loc = useLocation().pathname.split('/')[1];
-  console.log(loc, 'loc');
-  const [cookie, setCookie, removeCookie] = useCookies();
-
+  const [cookie] = useCookies(['XSRF-LOCAL-TOKEN']);
+  const isLoggedIn = JSON.stringify(cookie) !== '{}';
   const handleLogout = async () => {
     try {
       await cmsAPI.logout();
-      removeCookie('XSRF-LOCAL-TOKEN');
       disconnect();
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.log(error, 'erro');
       console.log('error while logging out');
@@ -57,16 +55,20 @@ const Navbar = () => {
             {address && address.substring(0, 20) + '...'}
           </div>
           <div>
-            {connectors.map((connector) => (
+            {connectors.map((connector, idx) => (
               <div
-                onClick={
-                  isConnected ? handleLogout : () => onConnect({ connector })
-                }
+                key={idx}
+                onClick={() => onConnect({ connector })}
                 className="link connect">
-                {isConnected ? 'LOGOUT' : 'CONNECT WALLET'}
+                CONNECT WALLET
               </div>
             ))}
           </div>
+          {isLoggedIn && (
+            <div className="link connect" onClick={handleLogout}>
+              LOGOUT
+            </div>
+          )}
         </div>
       )}
     </div>
