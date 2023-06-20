@@ -12,6 +12,7 @@ const Navbar = () => {
 
   console.log(connectors, address);
   const loc = useLocation().pathname.split('/')[1];
+  console.log(loc, 'loc');
   const [cookie, setCookie, removeCookie] = useCookies();
 
   const handleLogout = async () => {
@@ -31,13 +32,19 @@ const Navbar = () => {
         <img src={logo} alt="logo" className="logo" />
         {loc !== 'login' && (
           <div className="link-wrapper">
-            <Link to="/collection" className="link">
+            <Link
+              to="/collection"
+              className={`link ${loc === 'collection' ? 'active' : ''}`}>
               COLLECTION
             </Link>
-            <Link to={'/product'} className="link">
+            <Link
+              to={'/product'}
+              className={`link ${loc === 'product' ? 'active' : ''}`}>
               PRODUCT
             </Link>
-            <Link to={'/admin'} className="link">
+            <Link
+              to={'/admin'}
+              className={`link ${loc === 'admin' ? 'active' : ''}`}>
               ADMIN
             </Link>
           </div>

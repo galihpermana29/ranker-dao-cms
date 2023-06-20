@@ -25,6 +25,10 @@
         text-align: center;
 
         color: #ffffff;
+
+        &.active {
+          color: rgba(235, 225, 110, 0.688) !important;
+        }
       }
     }
   }
