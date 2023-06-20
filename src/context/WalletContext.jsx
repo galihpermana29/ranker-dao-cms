@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+
+import { message } from 'antd';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
+
 import cmsAPI from '@/api/cms';
 
 const INITIAL_STATE = {
@@ -30,6 +33,7 @@ export const WalletContextProvider = ({ children }) => {
         if (adminWalletAddresses.indexOf(data.account) < 0) {
           disconnect();
           setError('WALLET MISSMATCHED');
+          message.error('Wallet Is Not Registered In Admin Details Wallet');
           setTimeout(() => {
             window.location.reload();
           }, 2000);

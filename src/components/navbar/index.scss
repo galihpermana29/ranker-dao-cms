@@ -25,11 +25,17 @@
         text-align: center;
 
         color: #ffffff;
+
+        &.active {
+          color: rgba(235, 225, 110, 0.688) !important;
+        }
       }
     }
   }
 
   .right {
+    display: flex;
+    align-items: center;
     .link {
       color: white;
       text-decoration: none;
@@ -41,6 +47,14 @@
       text-align: center;
       color: #ffffff;
       cursor: pointer;
+    }
+
+    .address {
+      color: white;
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 700;
+      margin-right: 20px;
     }
   }
 }

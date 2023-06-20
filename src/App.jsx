@@ -1,12 +1,6 @@
 import { useEffect } from 'react';
+
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-
-import Navbar from './components/navbar';
-import { WalletContextProvider } from './context/WalletContext';
-
-import AuthContextProvider from './providers/AuthProviders';
-import MainRoutes from './routes';
-
 import {
   WagmiConfig,
   configureChains,
@@ -15,8 +9,13 @@ import {
   mainnet,
 } from 'wagmi';
 import { bscTestnet, bsc } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
+import { publicProvider } from 'wagmi/providers/public';
+
+import Navbar from './components/navbar';
+import { WalletContextProvider } from './context/WalletContext';
+import AuthContextProvider from './providers/AuthProviders';
+import MainRoutes from './routes';
 
 function App() {
   const loc = window.location.pathname;
