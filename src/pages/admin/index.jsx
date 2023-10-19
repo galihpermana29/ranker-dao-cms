@@ -34,7 +34,11 @@ const AllAdmin = () => {
   const getAllAdminsData = async () => {
     try {
       let activeParamsQ = new URLSearchParams(activeParams.query);
-      const { data: activeAdmin } = await cmsAPI.getAllAdmins(activeParamsQ);
+      let { data: activeAdmin } = await cmsAPI.getAllAdmins(activeParamsQ);
+      activeAdmin.data = activeAdmin.data?.map((admin, idx) => ({
+        ...admin,
+        key: idx,
+      }));
       setActiveAdminData(activeAdmin?.data);
       setActiveParams(
         {
@@ -48,6 +52,10 @@ const AllAdmin = () => {
       const { data: inactiveAdmin } = await cmsAPI.getAllAdmins(
         inactiveParamsQ
       );
+      inactiveAdmin.data = inactiveAdmin.data?.map((admin, idx) => ({
+        ...admin,
+        key: idx,
+      }));
       setInactiveAdminData(inactiveAdmin?.data);
       setInactiveParams(
         {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import cmsAPI from '@/api/cms';
 import { useStoreGamesData } from '@/state';
+import { imageBaseUrl } from '@/utils';
 
 import { CustomTable } from '@/components/table';
 import { Modal } from '@/components/modal';
@@ -18,13 +19,13 @@ import {
   mappingAddress,
 } from '@/utils/collectionsUtils';
 
-import { DUMMY_DATA } from '../shop/constant';
 import './style.scss';
 
 const DetailCollection = () => {
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const [showSort, setShowSort] = useState(false);
   const [data, setData] = useState({ logo: '' });
+  const [collections, setCollections] = useState([]);
   const [contractMetadataError, setContractMetadataError] = useState(null);
 
   const [gamesOptionsForLabel, setGamesData, setGamesOptionsForLabel] =
@@ -41,6 +42,10 @@ const DetailCollection = () => {
 
   const onClickEdit = (id) => {
     navigate(`/edit/${id}`);
+  };
+
+  const onClickGoBack = (id) => {
+    navigate('/collection');
   };
 
   const hittingAPICollection = async (payload) => {
@@ -80,6 +85,36 @@ const DetailCollection = () => {
     }
   };
 
+  const onSearchCollection = (value) => {
+    let newCollections = data.Collections.filter((collection) => {
+      if (collection.collectionId.includes(value)) {
+        return collection;
+      }
+    });
+
+    setCollections(newCollections);
+  };
+
+  const onSort = (value) => {
+    let sorted = data.Collections.sort((a, b) => {
+      if (value === 'ALPHABET') {
+        return a.collectionId - b.collectionId;
+      } else if (value === 'LAST UPDATED') {
+        const dateA = Math.floor(new Date(a.dateUpdated).getTime() / 1000);
+        const dateB = Math.floor(new Date(b.dateUpdated).getTime() / 1000);
+
+        return dateB - dateA;
+      } else if (value === 'LATEST UPLOADED') {
+        const dateA = Math.floor(new Date(a.dateUploaded).getTime() / 1000);
+        const dateB = Math.floor(new Date(b.dateUploaded).getTime() / 1000);
+
+        return dateB - dateA;
+      }
+    });
+
+    setCollections([...sorted]);
+  };
+
   const modalTypeDict = {
     productDetail: <ProductDetailModal />,
     addCollection: (
@@ -103,9 +138,63 @@ const DetailCollection = () => {
     ),
   };
 
+  const dataCollectionsCol = [
+    {
+      title: 'No',
+      dataIndex: 'no',
+      key: 'no',
+    },
+    {
+      title: 'Collection ID',
+      dataIndex: 'collectionId',
+      key: 'no',
+    },
+    {
+      title: 'Game',
+      dataIndex: 'game',
+      key: 'no',
+    },
+    {
+      title: 'Date Uploaded',
+      dataIndex: 'dateUploaded',
+      key: 'no',
+    },
+    {
+      title: 'Date Updated',
+      dataIndex: 'dateUpdated',
+      key: 'no',
+    },
+    {
+      title: 'Action',
+      dataIndex: 'Action',
+      key: 'no',
+      render: () => <button className="button">DELETE</button>,
+    },
+  ];
+
   useEffect(() => {
-    let filtered = DUMMY_DATA.filter((datas) => datas.id === parseInt(id));
-    setData(filtered[0]);
+    const getDetailGame = async () => {
+      try {
+        const {
+          data: { data },
+        } = await cmsAPI.getDetailGame(id);
+        data.Collections = data.Collections?.map((el, i) => {
+          return {
+            key: i,
+            no: i + 1,
+            collectionId: el.address,
+            game: el.gameId,
+            dateUploaded: el.createdAt,
+            dateUpdated: el.updatedAt,
+          };
+        });
+        setData(data);
+        setCollections(data.Collections);
+      } catch (error) {
+        console.log(err, 'error while getting data detail game');
+      }
+    };
+    getDetailGame();
   }, [id]);
 
   useEffect(() => {
@@ -133,10 +222,15 @@ const DetailCollection = () => {
       </Modal>
       <div className="header-filter">
         <div className="logo-wrapper">
-          <img src={logo} alt="logo" className="logo" />
+          <img src={imageBaseUrl(data.logo_url)} alt="logo" className="logo" />
         </div>
         <div className={`filter ${loc === 'edit' ? 'edit' : ''}`}>
-          <input type="text" className="input" />
+          <input
+            type="text"
+            className="input"
+            placeholder=" SEARCH COLLECTION"
+            onChange={(e) => onSearchCollection(e.target.value)}
+          />
           <div className={`button-wrapper ${loc === 'edit' ? 'edit' : ''}`}>
             <div className={`sort `}>
               <button className="button" onClick={() => setShowSort(!showSort)}>
@@ -144,10 +238,9 @@ const DetailCollection = () => {
               </button>
               <div
                 className={`list ${showSort ? 'show' : ''}`}
-                onClick={(e) => console.dir(e.target.innerText, 'd')}>
+                onClick={(e) => onSort(e.target.innerText)}>
                 <div className="list-item">ALPHABET</div>
                 <div className="list-item">LAST UPDATED</div>
-                <div className="list-item">LATEST UPLOADED</div>
                 <div className="list-item">LATEST UPLOADED</div>
                 <div className="list-item">PRICE</div>
               </div>
@@ -159,7 +252,9 @@ const DetailCollection = () => {
               }>
               ADD COLLECTION
             </button>
-            <button className={`button ${loc === 'edit' ? 'hidden' : ''}`}>
+            <button
+              className={`button ${loc === 'edit' ? 'hidden' : ''}`}
+              onClick={() => onClickGoBack()}>
               GO BACK
             </button>
           </div>
@@ -167,7 +262,7 @@ const DetailCollection = () => {
       </div>
 
       <div className="body-wrappers">
-        <CustomTable />
+        <CustomTable columns={dataCollectionsCol} data={collections} />
       </div>
     </div>
   );
