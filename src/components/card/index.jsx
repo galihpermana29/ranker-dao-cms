@@ -7,7 +7,7 @@ import './index.scss';
 const checkImageUrl = (url = '') => {
   const images = url.split('//');
   if (images[0] === 'https:') return url;
-  else return 'https://ipfs.io/ipfs/' + images[1];
+  else if (images[0] === 'ipfs:') return 'https://ipfs.io/ipfs/' + images[1];
 };
 
 const AddCard = ({ onClickCard, data, checkedStatus }) => {

@@ -12,6 +12,10 @@ function getAllGames() {
   return api.get('/games');
 }
 
+function getDetailGame(id) {
+  return api.get(`/games/${id}`);
+}
+
 function getAllAdmins(params = '') {
   return api.get(`/admins?${params}`);
 }
@@ -57,6 +61,7 @@ const cmsAPI = {
   forgotPasswordSendOTP,
   getAllAdmins,
   getAllGames,
+  getDetailGame,
   getCollection,
   login,
   logout,

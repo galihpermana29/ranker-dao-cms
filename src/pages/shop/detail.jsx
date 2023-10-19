@@ -1,8 +1,9 @@
-import { DUMMY_DATA } from './constant';
 import { getNftWithSpecificAddress } from '@/api/alchemy';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useStoreNFTCollection } from '@/state';
+import { imageBaseUrl } from '@/utils';
+import cmsAPI from '@/api/cms';
 
 import { Modal } from '@/components/modal';
 import { useWalletContext } from '@/context/WalletContext';
@@ -14,12 +15,11 @@ const DetailShop = () => {
   const { address, errors } = useWalletContext();
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const [showSort, setShowSort] = useState(false);
+  const [data, setData] = useState({ logo: '' });
 
   const { gameId } = useParams();
   const navigate = useNavigate();
   const loc = window.location.pathname.split('/')[1];
-
-  const newLogo = DUMMY_DATA.filter((d) => d.id === parseInt(gameId));
 
   const [activeCollections, setNftCollections, setActive] =
     useStoreNFTCollection((state) => [
@@ -54,6 +54,20 @@ const DetailShop = () => {
   };
 
   useEffect(() => {
+    const getDetailGame = async () => {
+      try {
+        const {
+          data: { data },
+        } = await cmsAPI.getDetailGame(gameId);
+        setData(data);
+      } catch (error) {
+        console.log(error, 'error while getting data detail game');
+      }
+    };
+    getDetailGame();
+  }, [gameId]);
+
+  useEffect(() => {
     const getNFT = async () => {
       // setLoading(true);
       try {
@@ -83,7 +97,7 @@ const DetailShop = () => {
       </Modal>
       <div className="header-filter">
         <div className="logo-wrapper">
-          <img src={newLogo[0].logo} alt="logo" className="logo" />
+          <img src={imageBaseUrl(data.logo_url)} alt="logo" className="logo" />
         </div>
         <div className={`filter ${loc === 'edit' ? 'edit' : ''}`}>
           <input type="text" className="input" />
@@ -130,7 +144,7 @@ const DetailShop = () => {
             <button className="button">GO BACK</button>
           </div>
           <div className="body-wrapper product-section">
-            {activeCollections?.data?.map((data, idx) => (
+            {activeCollections?.data?.map((collection, idx) => (
               <div key={idx}>
                 <CardProduct
                   id={idx}
@@ -138,7 +152,7 @@ const DetailShop = () => {
                   onClickCard={() =>
                     setIsOpenModal({ visible: true, type: 'productDetail' })
                   }
-                  data={data}
+                  data={collection}
                 />
               </div>
             ))}
@@ -146,7 +160,7 @@ const DetailShop = () => {
         </div>
       ) : (
         <div className="body-wrapper">
-          {activeCollections?.data?.map((data, idx) => (
+          {activeCollections?.data?.map((collection, idx) => (
             <div key={idx}>
               <CardProduct
                 id={idx}
@@ -154,7 +168,7 @@ const DetailShop = () => {
                 onClickCard={() =>
                   setIsOpenModal({ visible: true, type: 'productDetail' })
                 }
-                data={data}
+                data={collection}
               />
             </div>
           ))}

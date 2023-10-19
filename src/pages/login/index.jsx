@@ -104,7 +104,7 @@ const Login = () => {
               type="email"
               name="email"
               id="email"
-              initialValues={''}
+              initialvalues={''}
               className="input text-center"
               placeholder="email"
             />
@@ -114,7 +114,7 @@ const Login = () => {
               type="password"
               name="password"
               id="password"
-              initialValues={''}
+              initialvalues={''}
               className="input text-center"
               placeholder="password"
             />

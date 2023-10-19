@@ -74,7 +74,7 @@ export const WalletContextProvider = ({ children }) => {
       try {
         const {
           data: { data },
-        } = await cmsAPI.getDetailAdmin(1);
+        } = await cmsAPI.getDetailAdmin(3); // hardcoded
         localStorage.setItem(
           'walletAdresses',
           JSON.stringify(data.walletAddresses)
