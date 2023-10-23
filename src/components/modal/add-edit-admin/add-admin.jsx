@@ -146,7 +146,10 @@ const AddEditAdmin = ({ initialData, onClickSubmit }) => {
                       <div
                         type="danger"
                         className="button delete-button"
-                        onClick={() => remove(field.name)}>
+                        onClick={() => {
+                          remove(field.name)
+                          setInitialStateWallet(form.getFieldValue('fields'))
+                        }}>
                         DELETE
                       </div>
                     </div>
