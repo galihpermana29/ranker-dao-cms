@@ -31,9 +31,10 @@ const AllAdmin = () => {
 
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
 
-  const getAllAdminsData = async () => {
+  const getAllActiveAdmins = async () => {
     try {
       let activeParamsQ = new URLSearchParams(activeParams.query);
+      console.log(activeParams.query, '=');
       let { data: activeAdmin } = await cmsAPI.getAllAdmins(activeParamsQ);
       activeAdmin.data = activeAdmin.data?.map((admin, idx) => ({
         ...admin,
@@ -47,7 +48,13 @@ const AllAdmin = () => {
         },
         'metadata'
       );
+    } catch (error) {
+      console.log(error, 'error while getting active admins');
+    }
+  };
 
+  const getAllInactiveAdmins = async () => {
+    try {
       let inactiveParamsQ = new URLSearchParams(inactiveParams.query);
       const { data: inactiveAdmin } = await cmsAPI.getAllAdmins(
         inactiveParamsQ
@@ -65,7 +72,16 @@ const AllAdmin = () => {
         'metadata'
       );
     } catch (error) {
-      console.log(error, 'error while getting admins');
+      console.log(error, 'error while getting inactive admins');
+    }
+  };
+
+  const getAllAdminsData = async () => {
+    try {
+      await getAllActiveAdmins()
+      await getAllInactiveAdmins()
+    } catch (error) {
+      console.log(error, 'error while getting all admins');
     }
   };
 
@@ -195,8 +211,13 @@ const AllAdmin = () => {
   };
 
   useEffect(() => {
-    getAllAdminsData();
+    getAllActiveAdmins();
   }, [activeParams.query]);
+
+  useEffect(() => {
+    getAllInactiveAdmins();
+  }, [inactiveParams.query]);
+
   return (
     <div className="admin-wrapper">
       <Modal

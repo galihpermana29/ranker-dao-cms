@@ -32,6 +32,10 @@ const DetailShop = () => {
     navigate(`/edit/${gameId}/${ids}`);
   };
 
+  const onClickGoBack = (id) => {
+    navigate('/product');
+  };
+
   const modalTypeDict = {
     productDetail: <ProductDetailModal />,
   };
@@ -119,7 +123,9 @@ const DetailShop = () => {
             <Link className="button nft-add-button" to={'/add-nft'}>
               ADD NFT
             </Link>
-            <button className={`button ${loc === 'edit' ? 'hidden' : ''}`}>
+            <button
+              className={`button ${loc === 'edit' ? 'hidden' : ''}`}
+              onClick={() => onClickGoBack()}>
               GO BACK
             </button>
           </div>

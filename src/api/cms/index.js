@@ -17,6 +17,7 @@ function getDetailGame(id) {
 }
 
 function getAllAdmins(params = '') {
+  console.log(params, "param")
   return api.get(`/admins?${params}`);
 }
 
@@ -67,4 +68,5 @@ const cmsAPI = {
   logout,
   sendingOTP,
 };
+
 export default cmsAPI;
