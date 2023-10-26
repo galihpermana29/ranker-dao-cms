@@ -20,11 +20,14 @@ import {
   checkContractAddressName,
   gettingTheContractMetaData,
 } from '@/utils/collectionsUtils';
-import { convertArrayToObject, params } from '@/utils';
+import { getUniqueAddress, params } from '@/utils';
 
 import './index.scss';
 
 import failCollection from '../../assets/img/fail-collection.png';
+
+import { usePrepareContractWrite, useContractWrite } from 'wagmi';
+import contractAbi from '@/utils/contract-abi-0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc.json';
 
 const AddProduct = () => {
   const { address, errors } = useWalletContext();
@@ -83,13 +86,13 @@ const AddProduct = () => {
     }
   };
 
-  const isEditing = (record) => record.id === editingKey;
+  const isEditing = (record) => record.key === editingKey;
 
   const edit = (record) => {
     form.setFieldsValue({
       ...record,
     });
-    setEditingKey(record.id);
+    setEditingKey(record.key);
   };
 
   const cancel = () => {
@@ -99,13 +102,13 @@ const AddProduct = () => {
   const save = async (record) => {
     try {
       let row = await form.validateFields();
-      const key = record.id;
+      const key = record.key;
       const newData = [...cart];
-      const index = newData.findIndex((item) => key === item.id);
+      const index = newData.findIndex((item) => key === item.key);
 
       if (index > -1) {
         let item = newData[index];
-        if (editingKey === record.id && item.gameName === null) {
+        if (editingKey === record.key && item.gameName === null) {
           await handleCreatingNewCollection([item.address], row.gameName);
         }
         newData.splice(index, 1, { ...item, ...row });
@@ -144,11 +147,12 @@ const AddProduct = () => {
     {
       title: 'DATA UPLOUDED',
       editable: true,
+      dataIndex: 'dataUploaded',
     },
     {
       title: 'PRICE',
-      dataIndex: 'price',
       editable: true,
+      dataIndex: 'price',
     },
     {
       title: 'Action',
@@ -185,13 +189,14 @@ const AddProduct = () => {
 
   const gettingGameByContractAddress = async (cartData) => {
     try {
-      const newObj = convertArrayToObject(cart, 'id');
-      const paramsForApi = params(newObj);
+      const uniqueAddress = getUniqueAddress(cartData);
+      const paramsForApi = params(uniqueAddress);
       const {
         data: { data },
       } = await cmsAPI.getCollection(paramsForApi);
       let newCart = [...cartData];
-      newCart.forEach((c) => {
+      newCart.forEach((c, idx) => {
+        c.key = idx
         data.forEach((d) => {
           if (c.address === d.address) {
             c.gameName = d.Game.title;
@@ -269,6 +274,27 @@ const AddProduct = () => {
     ),
   };
 
+  const { config, error, isError } = usePrepareContractWrite({
+    address: '0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc',
+    abi: contractAbi,
+    functionName: 'addERC721Listing',
+    args: [
+      parseInt(200), // price
+      '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8', // contractAddr
+      parseInt(449), // tokenId
+    ],
+  });
+
+  const { write: addERC721Listing, isSuccess } = useContractWrite(config);
+
+  const addNft = async () => {
+    try {
+      addERC721Listing?.();
+    } catch (error) {
+      console.log(error, 'error add nft');
+    }
+  };
+
   useEffect(() => {
     const getAllGamesData = async () => {
       try {
@@ -336,7 +362,9 @@ const AddProduct = () => {
                   <div className="list-item">PRICE</div>
                 </div>
               </div>
-              <button className="button">ADD NFT</button>
+              <button className="button" onClick={() => addNft()}>
+                ADD NFT
+              </button>
             </div>
           </div>
           <div className="content">
@@ -367,7 +395,7 @@ const AddProduct = () => {
                 {activeCollections?.data?.map((data, idx) => (
                   <div key={idx}>
                     <CardProduct
-                      id={idx}
+                      idx={idx}
                       purpose="add"
                       onClickCard={setCart}
                       cart={cart}
