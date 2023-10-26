@@ -10,10 +10,10 @@ const checkImageUrl = (url = '') => {
   else if (images[0] === 'ipfs:') return 'https://ipfs.io/ipfs/' + images[1];
 };
 
-const AddCard = ({ onClickCard, data, checkedStatus }) => {
+const AddCard = ({ onClickCard, data, checkedStatus, idx }) => {
   const { image, name, tokenId } = data;
   return (
-    <div key={data.id} className="item-card" onClick={() => onClickCard(data)}>
+    <div key={idx} className="item-card" onClick={() => onClickCard(data)}>
       <img
         src={checkedStatus ? check : uncheck}
         alt="uncheck"
@@ -41,13 +41,13 @@ const AddCard = ({ onClickCard, data, checkedStatus }) => {
   );
 };
 
-const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
+const ShowCard = ({ data, onEdit, idx, onClickCard, setShowEdit, showEdit }) => {
   const { image, name } = data;
   return (
     <div
-      key={id}
+      key={idx}
       className="item-card"
-      onMouseEnter={() => setShowEdit({ visible: true, id: id })}
+      onMouseEnter={() => setShowEdit({ visible: true, id: idx })}
       onMouseLeave={() => setShowEdit({ visible: false, id: -1 })}>
       <div className="img-wrapper" onClick={onClickCard}>
         <img src={checkImageUrl(image)} alt="thumb" />
@@ -59,7 +59,7 @@ const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
       <div className="price-title">Price</div>
       <div
         className={`price-tag-wrapper ${
-          showEdit.visible && showEdit.id === id ? 'hidden' : 'visible'
+          showEdit.visible && showEdit.id === idx ? 'hidden' : 'visible'
         } `}>
         <img
           src={rankerCoinBadge}
@@ -71,10 +71,10 @@ const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
       </div>
       <div
         className={`edit-delete-wrapper ${
-          showEdit.visible && showEdit.id === id ? 'visible' : 'hidden'
+          showEdit.visible && showEdit.id === idx ? 'visible' : 'hidden'
         } `}>
         <button className="delete">DELETE</button>
-        <button className="edit" onClick={() => onEdit(id)}>
+        <button className="edit" onClick={() => onEdit(idx)}>
           EDIT
         </button>
       </div>
@@ -86,7 +86,7 @@ const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
  *
  * @param {object} data - data for the card
  * @param {function} onEdit - function for edit button
- * @param {number} id - id for key identity
+ * @param {number} idx - idx for key identity
  * @param {function} onClickCard - onClickcard
  * @param {string} purpose - show | add
  * @returns
@@ -95,7 +95,7 @@ const ShowCard = ({ data, onEdit, id, onClickCard, setShowEdit, showEdit }) => {
 const CardProduct = ({
   data,
   onEdit,
-  id,
+  idx,
   onClickCard,
   purpose = 'show',
   cart = [],
@@ -106,28 +106,36 @@ const CardProduct = ({
     tokenId: data.tokenId,
     tokenType: data.tokenType,
     address: data.contract.address,
-    id,
+    idx,
     price: '-',
   };
   const [showEdit, setShowEdit] = useState(false);
 
   const addingToCart = (clickedData) => {
     let idx = cart.findIndex(
-      (d) => d.tokenId === clickedData.tokenId && d.name === clickedData.name
+      (d) =>
+        d.tokenId === clickedData.tokenId && d.address === clickedData.address
     );
     if (idx < 0) {
       onClickCard((d) => [...d, clickedData]);
     } else {
-      const filteredCart = cart.filter(
-        (d) => d.tokenId !== clickedData.tokenId && d.name !== clickedData.name
-      );
+      const filteredCart = cart.filter((d) => {
+        if (d.tokenId !== clickedData.tokenId) {
+          return true;
+        } else if (
+          d.tokenId !== clickedData.tokenId &&
+          d.address !== clickedData.address
+        ) {
+          return true;
+        }
+      });
       onClickCard(filteredCart);
     }
   };
 
   const isChecked =
     cart.findIndex(
-      (d) => d.tokenId === newData.tokenId && d.name === newData.name
+      (d) => d.tokenId === newData.tokenId && d.address === newData.address
     ) < 0
       ? false
       : true;
@@ -136,7 +144,7 @@ const CardProduct = ({
     return (
       <ShowCard
         data={newData}
-        id={id}
+        idx={idx}
         onClickCard={onClickCard}
         onEdit={onEdit}
         setShowEdit={setShowEdit}
@@ -146,7 +154,7 @@ const CardProduct = ({
   } else {
     return (
       <AddCard
-        id={id}
+        idx={idx}
         onClickCard={addingToCart}
         data={newData}
         checkedStatus={isChecked}

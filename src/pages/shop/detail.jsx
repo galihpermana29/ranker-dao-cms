@@ -153,7 +153,7 @@ const DetailShop = () => {
             {activeCollections?.data?.map((collection, idx) => (
               <div key={idx}>
                 <CardProduct
-                  id={idx}
+                  idx={idx}
                   onEdit={onClickEdit}
                   onClickCard={() =>
                     setIsOpenModal({ visible: true, type: 'productDetail' })
@@ -169,7 +169,7 @@ const DetailShop = () => {
           {activeCollections?.data?.map((collection, idx) => (
             <div key={idx}>
               <CardProduct
-                id={idx}
+                idx={idx}
                 onEdit={onClickEdit}
                 onClickCard={() =>
                   setIsOpenModal({ visible: true, type: 'productDetail' })

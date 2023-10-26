@@ -4,19 +4,16 @@ export function imageBaseUrl(value) {
     : import.meta.env.VITE_BASE_URL + value;
 }
 
-export const convertArrayToObject = (array, key) => {
+export const getUniqueAddress = (array) => {
   const initialValue = {};
-  return array.reduce((obj, item) => {
-    console.log(obj, item, 'assdsd');
-    return {
-      ...obj,
-      [item[key]]: item.address,
-    };
-  }, initialValue);
+  // let result = array.map((e) => ({ [e.address]: true }));
+  array.forEach((e) => (initialValue[e.address] = true));
+
+  return initialValue;
 };
 
 export function params(data) {
   return Object.keys(data)
-    .map((key) => `addresses=${encodeURIComponent(data[key])}`)
+    .map((key) => `addresses=${encodeURIComponent(key)}`)
     .join('&');
 }
