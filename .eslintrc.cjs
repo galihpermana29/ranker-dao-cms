@@ -6,50 +6,51 @@ module.exports = {
     node: true,
   },
   extends: [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:import/recommended",
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:import/recommended',
   ],
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
+    ecmaVersion: 'latest',
+    sourceType: 'module',
   },
-  plugins: ["react"],
+  plugins: ['react'],
   rules: {
-    "no-unused-vars": "warn",
-    "react/jsx-uses-react": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/jsx-no-target-blank": "off",
-    "import/order": [
-      "error",
+    'no-unused-vars': 'warn',
+    'react/jsx-uses-react': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-no-target-blank': 'off',
+    'react/prop-types': 'off',
+    'import/order': [
+      'error',
       {
-        groups: ["builtin", "external", "internal"],
+        groups: ['builtin', 'external', 'internal'],
         pathGroups: [
           {
-            pattern: "react",
-            group: "external",
-            position: "before",
+            pattern: 'react',
+            group: 'external',
+            position: 'before',
           },
           {
-            pattern: "@/**",
-            group: "internal",
-            position: "before",
+            pattern: '@/**',
+            group: 'internal',
+            position: 'before',
           },
         ],
-        pathGroupsExcludedImportTypes: ["react"],
-        "newlines-between": "always",
+        pathGroupsExcludedImportTypes: ['react'],
+        'newlines-between': 'always',
         alphabetize: {
-          order: "asc",
+          order: 'asc',
           caseInsensitive: true,
         },
       },
     ],
   },
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       alias: {
-        map: [["@", "./src/"]],
-        extensions: [".js", ".jsx", "ts", "tsx"],
+        map: [['@', './src/']],
+        extensions: ['.js', '.jsx', 'ts', 'tsx'],
       },
     },
   },

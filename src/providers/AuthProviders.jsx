@@ -1,25 +1,20 @@
-import cmsAPI from '@/api/cms';
 import { createContext } from 'react';
+
+import cmsAPI from '@/api/cms';
 
 export const AuthContext = createContext();
 
 const AuthContextProvider = ({ children }) => {
   const handleLogin = async (payload) => {
-    try {
-      await cmsAPI.login(payload);
-    } catch (error) {
-      window.onerror = function (err, file, line) {
-        logError(
-          'The following error occurred: ' +
-            err +
-            '\nIn file: ' +
-            file +
-            '\nOn line: ' +
-            line
-        );
-        return true;
-      };
-    }
+    const {
+      data: { data },
+    } = await cmsAPI.login(payload);
+
+    localStorage.setItem('role', JSON.stringify(data.role));
+    localStorage.setItem(
+      'walletAdresses',
+      JSON.stringify(data.walletAddresses)
+    );
   };
   return (
     <AuthContext.Provider value={{ handleLogin }}>

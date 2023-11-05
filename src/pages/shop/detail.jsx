@@ -1,16 +1,18 @@
-import { getNftWithSpecificAddress } from '@/api/alchemy';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+
+import { Link, useNavigate, useParams } from 'react-router-dom';
+
+import { getNftWithSpecificAddress } from '@/api/alchemy';
+import cmsAPI from '@/api/cms';
+import CardProduct from '@/components/card';
+import { Modal } from '@/components/modal';
+import ProductDetailModal from '@/components/modal/product-detail';
+import { useWalletContext } from '@/context/WalletContext';
 import { useStoreNFTCollection } from '@/state';
 import { imageBaseUrl } from '@/utils';
-import cmsAPI from '@/api/cms';
-
-import { Modal } from '@/components/modal';
-import { useWalletContext } from '@/context/WalletContext';
-import CardProduct from '@/components/card';
-import ProductDetailModal from '@/components/modal/product-detail';
 
 import './style.scss';
+
 const DetailShop = () => {
   const { address, errors } = useWalletContext();
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
@@ -80,7 +82,6 @@ const DetailShop = () => {
         // setLoading(false);
       } catch (error) {
         console.log(error, 'error when getting nft from the wallet account');
-      } finally {
       }
     };
     if (address && errors !== 'WALLET MISSMATCHED') {

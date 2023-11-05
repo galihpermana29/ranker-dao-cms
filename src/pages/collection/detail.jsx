@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import cmsAPI from '@/api/cms';
-import { useStoreGamesData } from '@/state';
-import { imageBaseUrl } from '@/utils';
 
-import { CustomTable } from '@/components/table';
+import { Col, Row, Spin, message } from 'antd';
+import dayjs from 'dayjs';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import cmsAPI from '@/api/cms';
 import { Modal } from '@/components/modal';
 import AddCollection from '@/components/modal/add-collection';
 import ProductDetailModal from '@/components/modal/product-detail';
@@ -12,21 +13,37 @@ import {
   FailCollectionRewarding,
   SuccessCollectionRewarding,
 } from '@/components/modal/rewarding';
-
-import {
-  checkContractAddressName,
-  gettingTheContractMetaData,
-  mappingAddress,
-} from '@/utils/collectionsUtils';
+import { CustomTable } from '@/components/table';
+import { useWalletContext } from '@/context/WalletContext';
+import { useCreateCollection } from '@/hooks/useCreateCollection';
+import { useStoreCollectionAddress, useStoreGamesData } from '@/state';
+import { imageBaseUrl } from '@/utils';
 
 import './style.scss';
 
 const DetailCollection = () => {
-  const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
+  const queryClient = useQueryClient();
+  const { address } = useWalletContext();
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const loc = window.location.pathname.split('/')[1];
+
+  const [isOpenModal, setIsOpenModal] = useState({
+    visible: false,
+    type: '',
+    data: [],
+  });
+
   const [showSort, setShowSort] = useState(false);
-  const [data, setData] = useState({ logo: '' });
-  const [collections, setCollections] = useState([]);
   const [contractMetadataError, setContractMetadataError] = useState(null);
+
+  const { data: gamesData } = useQuery('games', () => cmsAPI.getAllGames());
+
+  const {
+    data: detailGameData,
+    isLoading,
+    isError,
+  } = useQuery(['detail-game', id], () => cmsAPI.getDetailGame(id));
 
   const [gamesOptionsForLabel, setGamesData, setGamesOptionsForLabel] =
     useStoreGamesData((state) => [
@@ -35,90 +52,88 @@ const DetailCollection = () => {
       state.setGamesOptionsForLabel,
     ]);
 
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const loc = window.location.pathname.split('/')[1];
-  const { logo } = data;
+  const [
+    rawData,
+    collectionData,
+    collectionDataFiltered,
+    setCollectionData,
+    setCollectionDataFiltered,
+  ] = useStoreCollectionAddress((state) => [
+    state.rawData,
+    state.collectionData,
+    state.collectionDataFiltered,
+    state.setCollectionData,
+    state.setCollectionDataFiltered,
+  ]);
 
-  const onClickEdit = (id) => {
-    navigate(`/edit/${id}`);
-  };
-
-  const onClickGoBack = (id) => {
-    navigate('/collection');
-  };
-
-  const hittingAPICollection = async (payload) => {
+  const creationAndEditCollection = async (payload) => {
     try {
-      await cmsAPI.createCollection(payload);
+      if (isOpenModal.data) {
+        await cmsAPI.editCollection(isOpenModal.data.id, payload[0]);
+      } else {
+        await cmsAPI.createCollection(payload);
+      }
       setIsOpenModal({ type: 'successCollection', visible: true });
     } catch (error) {
       setIsOpenModal({ type: 'failCollection', visible: true });
     }
   };
 
-  const handleCreateCollections = async (value) => {
+  const deleteCollection = async (id) => {
     try {
-      const { fields = [], game } = value;
-      if (fields.length === 0) {
-        setContractMetadataError('Contract Address Is Required!');
-        return;
-      }
-
-      const payloadForGettingTheContractName = mappingAddress(
-        fields,
-        setContractMetadataError
-      );
-      if (payloadForGettingTheContractName) {
-        const responsesFromAlchemy = await gettingTheContractMetaData(
-          payloadForGettingTheContractName
-        );
-        const payload = responsesFromAlchemy.map((d) => ({
-          name: checkContractAddressName(d.name),
-          address: d.address,
-          gameId: game,
-        }));
-        await hittingAPICollection(payload);
-      }
+      await cmsAPI.deleteCollection(id);
+      setIsOpenModal({ type: 'successCollection', visible: true });
     } catch (error) {
-      setContractMetadataError(error);
+      setIsOpenModal({ type: 'failCollection', visible: true });
     }
   };
 
-  const onSearchCollection = (value) => {
-    let newCollections = data.Collections.filter((collection) => {
-      if (collection.collectionId.includes(value)) {
-        return collection;
-      }
-    });
+  const { mutate: deletionMutation } = useMutation({
+    mutationFn: deleteCollection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: 'games',
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['detail-game'],
+      });
+    },
+  });
 
-    setCollections(newCollections);
+  const { mutate: creationMutation } = useMutation({
+    mutationFn: creationAndEditCollection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: 'games',
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['detail-game'],
+      });
+    },
+  });
+
+  const onClickGoBack = () => {
+    navigate('/collection');
+  };
+
+  const { handleCreateCollections } = useCreateCollection(
+    setContractMetadataError,
+    creationMutation
+  );
+
+  const onSearchCollection = (value) => {
+    setCollectionDataFiltered(value, 'search', collectionData);
   };
 
   const onSort = (value) => {
-    let sorted = data.Collections.sort((a, b) => {
-      if (value === 'ALPHABET') {
-        return a.collectionId - b.collectionId;
-      } else if (value === 'LAST UPDATED') {
-        const dateA = Math.floor(new Date(a.dateUpdated).getTime() / 1000);
-        const dateB = Math.floor(new Date(b.dateUpdated).getTime() / 1000);
-
-        return dateB - dateA;
-      } else if (value === 'LATEST UPLOADED') {
-        const dateA = Math.floor(new Date(a.dateUploaded).getTime() / 1000);
-        const dateB = Math.floor(new Date(b.dateUploaded).getTime() / 1000);
-
-        return dateB - dateA;
-      }
-    });
-
-    setCollections([...sorted]);
+    setCollectionDataFiltered(value, 'sort', collectionData);
   };
 
   const modalTypeDict = {
     productDetail: <ProductDetailModal />,
     addCollection: (
       <AddCollection
+        initialData={isOpenModal.data}
         gameOptions={gamesOptionsForLabel}
         onFinish={handleCreateCollections}
         contractError={contractMetadataError}
@@ -147,70 +162,87 @@ const DetailCollection = () => {
     {
       title: 'Collection ID',
       dataIndex: 'collectionId',
-      key: 'no',
+      key: 'collectionId',
     },
     {
       title: 'Game',
       dataIndex: 'game',
-      key: 'no',
+      key: 'game',
+      render: () => <p>{rawData.title}</p>,
     },
     {
       title: 'Date Uploaded',
       dataIndex: 'dateUploaded',
-      key: 'no',
+      key: 'dateUploaded',
+      render: (dateUploaded) => (
+        <p>{dayjs(dateUploaded).format('MM-DD-YYYY')}</p>
+      ),
     },
     {
       title: 'Date Updated',
       dataIndex: 'dateUpdated',
-      key: 'no',
+      key: 'dateUpdated',
+      render: (dateUpdated) => <p>{dayjs(dateUpdated).format('MM-DD-YYYY')}</p>,
     },
     {
       title: 'Action',
-      dataIndex: 'Action',
-      key: 'no',
-      render: () => <button className="button">DELETE</button>,
+      dataIndex: '',
+      key: 'id',
+      render: (data) => (
+        <Row gutter={[12, 12]}>
+          <Col>
+            <button
+              className="button"
+              onClick={() => {
+                if (address) {
+                  setIsOpenModal({
+                    type: 'addCollection',
+                    visible: true,
+                    data: data,
+                  });
+                }
+
+                message.info('Please connect to your wallet via metamask');
+              }}>
+              Edit
+            </button>
+          </Col>
+          <Col>
+            <button
+              className="button"
+              onClick={() => deletionMutation(data.id)}>
+              DELETE
+            </button>
+          </Col>
+        </Row>
+      ),
     },
   ];
 
   useEffect(() => {
-    const getDetailGame = async () => {
-      try {
-        const {
-          data: { data },
-        } = await cmsAPI.getDetailGame(id);
-        data.Collections = data.Collections?.map((el, i) => {
-          return {
-            key: i,
-            no: i + 1,
-            collectionId: el.address,
-            game: el.gameId,
-            dateUploaded: el.createdAt,
-            dateUpdated: el.updatedAt,
-          };
-        });
-        setData(data);
-        setCollections(data.Collections);
-      } catch (error) {
-        console.log(err, 'error while getting data detail game');
-      }
-    };
-    getDetailGame();
-  }, [id]);
+    if (detailGameData) {
+      setCollectionData(detailGameData);
+    }
+  }, [id, detailGameData]);
 
   useEffect(() => {
-    const getAllGamesData = async () => {
-      try {
-        const {
-          data: { data },
-        } = await cmsAPI.getAllGames();
-        setGamesData(data);
-        setGamesOptionsForLabel(data);
-      } catch (error) {
-        console.log(error, 'error while getting data games');
-      }
-    };
-    getAllGamesData();
-  }, []);
+    if (gamesData) {
+      setGamesData(gamesData);
+      setGamesOptionsForLabel(gamesData);
+    }
+  }, [gamesData, setGamesData, setGamesOptionsForLabel]);
+
+  if (isError) {
+    return <div className="loading-container">Error occur</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <div className="detail-shop-wrapper">
@@ -222,7 +254,11 @@ const DetailCollection = () => {
       </Modal>
       <div className="header-filter">
         <div className="logo-wrapper">
-          <img src={imageBaseUrl(data.logo_url)} alt="logo" className="logo" />
+          <img
+            src={imageBaseUrl(rawData.logo_url)}
+            alt="logo"
+            className="logo"
+          />
         </div>
         <div className={`filter ${loc === 'edit' ? 'edit' : ''}`}>
           <input
@@ -243,13 +279,21 @@ const DetailCollection = () => {
                 <div className="list-item">LAST UPDATED</div>
                 <div className="list-item">LATEST UPLOADED</div>
                 <div className="list-item">PRICE</div>
+                <div className="list-item">RESET</div>
               </div>
             </div>
             <button
               className="button add-collection-button"
-              onClick={() =>
-                setIsOpenModal({ type: 'addCollection', visible: true })
-              }>
+              onClick={() => {
+                if (address) {
+                  return setIsOpenModal({
+                    type: 'addCollection',
+                    visible: true,
+                  });
+                }
+
+                message.info('Please connect to your wallet via metamask');
+              }}>
               ADD COLLECTION
             </button>
             <button
@@ -262,7 +306,14 @@ const DetailCollection = () => {
       </div>
 
       <div className="body-wrappers">
-        <CustomTable columns={dataCollectionsCol} data={collections} />
+        <CustomTable
+          columns={dataCollectionsCol}
+          data={
+            collectionDataFiltered.length > 0
+              ? collectionDataFiltered
+              : collectionData
+          }
+        />
       </div>
     </div>
   );

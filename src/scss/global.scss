@@ -277,3 +277,10 @@
   border: none;
   cursor: pointer;
 }
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  align-items: center;
+}

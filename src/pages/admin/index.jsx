@@ -1,11 +1,13 @@
+import { useEffect, useState } from 'react';
+
+import { Col, Row } from 'antd';
+
 import cmsAPI from '@/api/cms';
 import { Modal } from '@/components/modal';
 import AddEditAdmin from '@/components/modal/add-edit-admin/add-admin';
 import { AdminRewarding } from '@/components/modal/rewarding';
 import { CustomTable } from '@/components/table';
 import { useStoreAdminData } from '@/state';
-import { Col, Row } from 'antd';
-import { useEffect, useState } from 'react';
 import './index.scss';
 
 const AllAdmin = () => {
@@ -34,7 +36,6 @@ const AllAdmin = () => {
   const getAllActiveAdmins = async () => {
     try {
       let activeParamsQ = new URLSearchParams(activeParams.query);
-      console.log(activeParams.query, '=');
       let { data: activeAdmin } = await cmsAPI.getAllAdmins(activeParamsQ);
       activeAdmin.data = activeAdmin.data?.map((admin, idx) => ({
         ...admin,
@@ -78,8 +79,8 @@ const AllAdmin = () => {
 
   const getAllAdminsData = async () => {
     try {
-      await getAllActiveAdmins()
-      await getAllInactiveAdmins()
+      await getAllActiveAdmins();
+      await getAllInactiveAdmins();
     } catch (error) {
       console.log(error, 'error while getting all admins');
     }
@@ -111,24 +112,18 @@ const AllAdmin = () => {
   };
 
   const onChange = (purpose, value, isActive) => {
+    let params = {
+      active: isActive,
+      limit: 10,
+      [purpose]: value,
+    };
+
     if (isActive) {
-      setActiveParams(
-        {
-          active: isActive,
-          limit: 10,
-          [purpose]: value,
-        },
-        'query'
-      );
+      if (value === '') delete params[purpose];
+      setActiveParams(params, 'query');
     } else {
-      setInactiveParams(
-        {
-          active: isActive,
-          limit: 10,
-          [purpose]: value,
-        },
-        'query'
-      );
+      if (value === '') delete params[purpose];
+      setInactiveParams(params, 'query');
     }
   };
 

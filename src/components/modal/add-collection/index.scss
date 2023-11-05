@@ -59,8 +59,12 @@
       font-weight: 500;
       font-size: 10px;
       line-height: 12px;
-      color: #7b7b7b;
       cursor: pointer;
+      &.error {
+        color: #fa7878;
+        cursor: initial;
+        font-size: 12px;
+      }
     }
 
     .select-add {

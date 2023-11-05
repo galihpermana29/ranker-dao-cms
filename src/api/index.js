@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import axios from 'axios';
 
 const createAPI = (
@@ -21,7 +22,17 @@ const createAPI = (
     },
 
     (error) => {
-      console.log(error);
+      if (error.response.status === 400) {
+        message.error('Error 400: Invalid Credentials');
+      }
+
+      if (error.response.status === 500) {
+        message.error('Error 500: Internal Sever Error');
+      }
+
+      if (error.response.status === 401) {
+        message.error('Error 401: Not Authorized');
+      }
 
       return Promise.reject(error);
     }

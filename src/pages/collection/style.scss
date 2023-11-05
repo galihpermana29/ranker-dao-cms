@@ -39,6 +39,7 @@
       input {
         width: 100% !important;
         max-width: 500px;
+        padding: 10px;
       }
 
       .button-wrapper {
@@ -59,7 +60,7 @@
             display: none;
           }
 
-          &.add-collection-button{
+          &.add-collection-button {
             font-size: 12px;
             text-align: center;
           }
@@ -79,7 +80,7 @@
             top: 34px;
             padding: 10px 0;
             display: none;
-
+            z-index: 99;
             &.show {
               display: initial;
             }

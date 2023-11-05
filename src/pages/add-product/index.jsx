@@ -1,33 +1,29 @@
 import { useEffect, useState } from 'react';
-import { Form, Popconfirm } from 'antd';
 
-import { useWalletContext } from '@/context/WalletContext';
+import { Form, Popconfirm } from 'antd';
+import { usePrepareContractWrite, useContractWrite } from 'wagmi';
+import './index.scss';
 
 import { getNftWithSpecificAddress } from '@/api/alchemy';
 import cmsAPI from '@/api/cms';
-
-import { Modal } from '@/components/modal';
-import AddProductListModal from '@/components/modal/add-product-list';
 import CardProduct from '@/components/card';
 import LoadingProcessComponent from '@/components/loading';
+import { Modal } from '@/components/modal';
+import AddProductListModal from '@/components/modal/add-product-list';
 import {
   FailCollectionRewarding,
   SuccessCollectionRewarding,
 } from '@/components/modal/rewarding';
-
+import { useWalletContext } from '@/context/WalletContext';
 import { useStoreGamesData, useStoreNFTCollection } from '@/state';
+import { getUniqueAddress, params } from '@/utils';
 import {
   checkContractAddressName,
   gettingTheContractMetaData,
 } from '@/utils/collectionsUtils';
-import { getUniqueAddress, params } from '@/utils';
-
-import './index.scss';
+import contractAbi from '@/utils/contract-abi-0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc.json';
 
 import failCollection from '../../assets/img/fail-collection.png';
-
-import { usePrepareContractWrite, useContractWrite } from 'wagmi';
-import contractAbi from '@/utils/contract-abi-0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc.json';
 
 const AddProduct = () => {
   const { address, errors } = useWalletContext();
@@ -196,7 +192,7 @@ const AddProduct = () => {
       } = await cmsAPI.getCollection(paramsForApi);
       let newCart = [...cartData];
       newCart.forEach((c, idx) => {
-        c.key = idx
+        c.key = idx;
         data.forEach((d) => {
           if (c.address === d.address) {
             c.gameName = d.Game.title;
@@ -320,7 +316,6 @@ const AddProduct = () => {
         setLoading(false);
       } catch (error) {
         console.log(error, 'error when getting nft from the wallet account');
-      } finally {
       }
     };
     if (address && errors !== 'WALLET MISSMATCHED') {

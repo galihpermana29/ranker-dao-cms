@@ -1,3 +1,8 @@
+import { useContext, useState } from 'react';
+
+import { Form } from 'antd';
+import { useNavigate } from 'react-router-dom';
+
 import cmsAPI from '@/api/cms';
 import imageLogin from '@/assets/img/login-image.png';
 import {
@@ -8,9 +13,6 @@ import {
 import { Modal } from '@/components/modal';
 import { SuccessResetPassword } from '@/components/modal/rewarding';
 import { AuthContext } from '@/providers/AuthProviders';
-import { Form } from 'antd';
-import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import './index.scss';
 
@@ -21,25 +23,18 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState(false);
 
   const handleSubmitFormLogin = async (value) => {
-    try {
-      await handleLogin(value);
-      navigate('/collection');
-    } catch (error) {
-      console.log(error, 'err');
-    }
+    await handleLogin(value);
+    navigate('/collection');
+    window.location.reload();
   };
 
   const handleSubmitEmailForgotPassword = async (value) => {
-    try {
-      setIsOpenModal({
-        visible: true,
-        type: 'enterOTP',
-        data: { email: value.email },
-      });
-      await cmsAPI.forgotPasswordSendOTP(value);
-    } catch (error) {
-      console.log(error, 'error');
-    }
+    await cmsAPI.forgotPasswordSendOTP(value);
+    setIsOpenModal({
+      visible: true,
+      type: 'enterOTP',
+      data: { email: value.email },
+    });
   };
 
   const handleOTPCode = async (value) => {
@@ -104,7 +99,6 @@ const Login = () => {
               type="email"
               name="email"
               id="email"
-              initialvalues={''}
               className="input text-center"
               placeholder="email"
             />
@@ -114,7 +108,6 @@ const Login = () => {
               type="password"
               name="password"
               id="password"
-              initialvalues={''}
               className="input text-center"
               placeholder="password"
             />

@@ -1,7 +1,8 @@
 import './index.scss';
-import { Form, Input } from 'antd';
-import { useForm } from 'antd/es/form/Form';
 import { useEffect, useState } from 'react';
+
+import { Form, Input, message } from 'antd';
+import { useForm } from 'antd/es/form/Form';
 
 const AddEditAdmin = ({ initialData, onClickSubmit }) => {
   const [form] = useForm();
@@ -11,6 +12,10 @@ const AddEditAdmin = ({ initialData, onClickSubmit }) => {
 
   const handleAddAdmin = async (val) => {
     const { fields, email, username, password } = val;
+
+    if (fields.length === 0 && !initialData)
+      return message.error('There should be minimum 1 address to be added');
+
     const walletAddresses = mappingAddressesFromComponentToForm(fields);
     let bodyAPI = {
       email,
@@ -75,18 +80,39 @@ const AddEditAdmin = ({ initialData, onClickSubmit }) => {
       <div className="modal-title2">Please input data for new admin</div>
       <Form form={form} className="form-wrapper" onFinish={handleAddAdmin}>
         <div className="label">USERNAME</div>
-        <Form.Item name={'username'} noStyle>
+        <Form.Item
+          name={'username'}
+          rules={[
+            {
+              required: initialData ? false : true,
+              message: 'email is required',
+            },
+          ]}>
           <Input type="text" className="input" />
         </Form.Item>
         <div className="label">PASSWORD</div>
-        <Form.Item name={'password'} noStyle>
+        <Form.Item
+          name={'password'}
+          rules={[
+            {
+              required: initialData ? false : true,
+              message: 'password is required',
+            },
+          ]}>
           <Input.Password
             placeholder="INSERT PASSWORD"
             className="input add-password"
           />
         </Form.Item>
         <div className="label">EMAIL</div>
-        <Form.Item name={'email'} noStyle>
+        <Form.Item
+          name={'email'}
+          rules={[
+            {
+              required: initialData ? false : true,
+              message: 'email is required',
+            },
+          ]}>
           <Input placeholder="INSERT EMAIL" type="text" className="input" />
         </Form.Item>
         <div className="label">WALLET ADDRESS</div>
@@ -147,8 +173,8 @@ const AddEditAdmin = ({ initialData, onClickSubmit }) => {
                         type="danger"
                         className="button delete-button"
                         onClick={() => {
-                          remove(field.name)
-                          setInitialStateWallet(form.getFieldValue('fields'))
+                          remove(field.name);
+                          setInitialStateWallet(form.getFieldValue('fields'));
                         }}>
                         DELETE
                       </div>
