@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
   WagmiConfig,
@@ -32,23 +33,28 @@ function App() {
     connectors: [new MetaMaskConnector({ chains })],
   });
 
+  const queryClient = new QueryClient();
+
   useEffect(() => {
     if (loc === '/') window.location.replace('/login');
   }, []);
+
   return (
     <AuthContextProvider>
       <WagmiConfig client={client}>
         <WalletContextProvider>
-          <BrowserRouter>
-            <Navbar />
-            <Routes>
-              <Route path="/*" element={<MainRoutes />} />
-              <Route
-                path="*"
-                element={<div> Not Found or You do not have permission.</div>}
-              />
-            </Routes>
-          </BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <Navbar />
+              <Routes>
+                <Route path="/*" element={<MainRoutes />} />
+                <Route
+                  path="*"
+                  element={<div> Not Found or You do not have permission.</div>}
+                />
+              </Routes>
+            </BrowserRouter>
+          </QueryClientProvider>
         </WalletContextProvider>
       </WagmiConfig>
     </AuthContextProvider>

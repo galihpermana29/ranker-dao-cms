@@ -1,11 +1,11 @@
 import React from 'react';
 
+import { CookiesProvider } from 'react-cookie';
 import ReactDOM from 'react-dom/client';
 
 import App from '@/App';
 
 import '@/scss/global.scss';
-import { CookiesProvider } from 'react-cookie';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

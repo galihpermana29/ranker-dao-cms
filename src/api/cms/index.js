@@ -8,16 +8,21 @@ function logout() {
   return api.post(`/logout`, {});
 }
 
-function getAllGames() {
-  return api.get('/games');
+async function getAllGames() {
+  const {
+    data: { data },
+  } = await api.get('/games');
+  return data;
 }
 
-function getDetailGame(id) {
-  return api.get(`/games/${id}`);
+async function getDetailGame(id) {
+  const {
+    data: { data },
+  } = await api.get(`/games/${id}`);
+  return data;
 }
 
 function getAllAdmins(params = '') {
-  console.log(params, "param")
   return api.get(`/admins?${params}`);
 }
 
@@ -45,6 +50,14 @@ function createCollection(payload) {
   return api.post(`/collections`, payload);
 }
 
+function editCollection(id, payload) {
+  return api.put(`/collections/${id}`, payload);
+}
+
+function deleteCollection(id) {
+  return api.delete(`/collections/${id}`);
+}
+
 function getCollection(params) {
   return api.get(`/collections?${params}`);
 }
@@ -67,6 +80,8 @@ const cmsAPI = {
   login,
   logout,
   sendingOTP,
+  deleteCollection,
+  editCollection,
 };
 
 export default cmsAPI;

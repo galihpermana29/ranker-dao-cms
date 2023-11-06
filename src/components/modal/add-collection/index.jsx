@@ -1,15 +1,35 @@
+import { useEffect } from 'react';
+
 import { Form, Input, Select } from 'antd';
+
 import './index.scss';
 
-const AddCollection = ({ gameOptions = [], onFinish, contractError }) => {
+const AddCollection = ({
+  gameOptions = [],
+  onFinish,
+  contractError,
+  initialData = null,
+}) => {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (initialData) {
+      form.setFieldsValue({
+        fields: [{ name: initialData.collectionId }],
+        game: initialData.game,
+      });
+    }
+  }, []);
+
   return (
     <div className="add-collection">
-      <div className="modal-title">ADD COLLECTION</div>
+      <div className="modal-title">
+        {initialData ? 'EDIT' : 'ADD'} COLLECTION
+      </div>
       <div className="modal-title2">ADD A CATEGORY FOR YOUR ITEMS</div>
       <Form form={form} className="form-wrapper" onFinish={onFinish}>
         <div className="label">COLLECTION ADDRESS</div>
-        <Form.List name="fields">
+        <Form.List name="fields" initialValue={['']}>
           {(fields, { add, remove }) => {
             return (
               <div>
@@ -43,7 +63,9 @@ const AddCollection = ({ gameOptions = [], onFinish, contractError }) => {
             );
           }}
         </Form.List>
-        {contractError && <div className="add-input">{contractError}</div>}
+        {contractError && (
+          <div className="add-input error">{contractError}</div>
+        )}
         <div className="label">SELECT GAME</div>
         <Form.Item name={'game'} rules={[{ required: true }]}>
           <Select
@@ -59,7 +81,7 @@ const AddCollection = ({ gameOptions = [], onFinish, contractError }) => {
         </Form.Item>
         <Form.Item noStyle>
           <button type="submit" className="button">
-            ADD COLLECTION
+            {initialData ? 'EDIT' : 'ADD'} COLLECTION
           </button>
         </Form.Item>
         <Form.Item noStyle>

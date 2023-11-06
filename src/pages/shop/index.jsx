@@ -2,6 +2,8 @@ import './style.scss';
 
 import { useEffect, useState } from 'react';
 
+import { Spin, message } from 'antd';
+import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 
 import cmsAPI from '@/api/cms';
@@ -11,19 +13,17 @@ import {
   FailCollectionRewarding,
   SuccessCollectionRewarding,
 } from '@/components/modal/rewarding';
+import { useWalletContext } from '@/context/WalletContext';
+import { useCreateCollection } from '@/hooks/useCreateCollection';
 import { useStoreGamesData } from '@/state';
 import { imageBaseUrl } from '@/utils';
-import {
-  checkContractAddressName,
-  gettingTheContractMetaData,
-  mappingAddress,
-} from '@/utils/collectionsUtils';
 
 const OurShop = () => {
+  const { address } = useWalletContext();
   const loc = window.location.pathname.split('/')[1];
-
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const [contractMetadataError, setContractMetadataError] = useState(null);
+
   const [
     gamesData,
     gamesOptionsForLabel,
@@ -36,6 +36,10 @@ const OurShop = () => {
     state.setGamesOptionsForLabel,
   ]);
 
+  const { data, isLoading, isError } = useQuery('games', () =>
+    cmsAPI.getAllGames()
+  );
+
   const hittingAPICollection = async (payload) => {
     try {
       await cmsAPI.createCollection(payload);
@@ -45,33 +49,10 @@ const OurShop = () => {
     }
   };
 
-  const handleCreateCollections = async (value) => {
-    try {
-      const { fields = [], game } = value;
-      if (fields.length === 0) {
-        setContractMetadataError('Contract Address Is Required!');
-        return;
-      }
-
-      const payloadForGettingTheContractName = mappingAddress(
-        fields,
-        setContractMetadataError
-      );
-      if (payloadForGettingTheContractName) {
-        const responsesFromAlchemy = await gettingTheContractMetaData(
-          payloadForGettingTheContractName
-        );
-        const payload = responsesFromAlchemy.map((d) => ({
-          name: checkContractAddressName(d.name),
-          address: d.address,
-          gameId: game,
-        }));
-        await hittingAPICollection(payload);
-      }
-    } catch (error) {
-      setContractMetadataError(error);
-    }
-  };
+  const { handleCreateCollections } = useCreateCollection(
+    setContractMetadataError,
+    hittingAPICollection
+  );
 
   const modalTypeDict = {
     addCollection: (
@@ -96,19 +77,23 @@ const OurShop = () => {
   };
 
   useEffect(() => {
-    const getAllGamesData = async () => {
-      try {
-        const {
-          data: { data },
-        } = await cmsAPI.getAllGames();
-        setGamesData(data);
-        setGamesOptionsForLabel(data);
-      } catch (error) {
-        console.log(error, 'error while getting data games');
-      }
-    };
-    getAllGamesData();
-  }, []);
+    if (data) {
+      setGamesData(data);
+      setGamesOptionsForLabel(data);
+    }
+  }, [data, setGamesData, setGamesOptionsForLabel]);
+
+  if (isError) {
+    return <div className="loading-container">Error occur</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <div className="shop-container">
@@ -127,13 +112,17 @@ const OurShop = () => {
       </div>
       <div className="bottom-content">
         {loc === 'collection' ? (
-          <Link
+          <button
+            type="button"
             className="button"
-            onClick={() =>
-              setIsOpenModal({ visible: true, type: 'addCollection' })
-            }>
+            onClick={() => {
+              if (address) {
+                return setIsOpenModal({ visible: true, type: 'addCollection' });
+              }
+              message.info('Please connect to your wallet via metamask');
+            }}>
             ADD COLLECTION
-          </Link>
+          </button>
         ) : (
           <Link className="button" to={'/add-nft'}>
             ADD ITEM

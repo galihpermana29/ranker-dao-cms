@@ -17,3 +17,7 @@ export function params(data) {
     .map((key) => `addresses=${encodeURIComponent(key)}`)
     .join('&');
 }
+
+export function hasDuplicates(array) {
+  return new Set(array).size !== array.length;
+}

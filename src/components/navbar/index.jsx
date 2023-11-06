@@ -1,5 +1,5 @@
 import './index.scss';
-import { useCookies } from 'react-cookie';
+import { message } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 
 import cmsAPI from '@/api/cms';
@@ -9,19 +9,21 @@ import { useWalletContext } from '@/context/WalletContext';
 const Navbar = () => {
   const { onConnect, connectors, disconnect, isConnected, address } =
     useWalletContext();
+
   const loc = useLocation().pathname.split('/')[1];
-  const [cookie] = useCookies(['XSRF-LOCAL-TOKEN']);
-  const isLoggedIn = JSON.stringify(cookie) !== '{}';
+
+  const role = JSON.parse(localStorage.getItem('role'));
+
   const handleLogout = async () => {
     try {
       await cmsAPI.logout();
       disconnect();
+      localStorage.clear();
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (error) {
-      console.log(error, 'erro');
-      console.log('error while logging out');
+      message.error('Error logout cookies');
     }
   };
   return (
@@ -40,11 +42,13 @@ const Navbar = () => {
               className={`link ${loc === 'product' ? 'active' : ''}`}>
               PRODUCT
             </Link>
-            <Link
-              to={'/admin'}
-              className={`link ${loc === 'admin' ? 'active' : ''}`}>
-              ADMIN
-            </Link>
+            {role === 'superAdmin' && (
+              <Link
+                to={'/admin'}
+                className={`link ${loc === 'admin' ? 'active' : ''}`}>
+                ADMIN
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -60,15 +64,13 @@ const Navbar = () => {
                 key={idx}
                 onClick={() => onConnect({ connector })}
                 className="link connect">
-                CONNECT WALLET
+                {address ? 'CONNECTED' : 'CONNECT WALLET'}
               </div>
             ))}
           </div>
-          {isLoggedIn && (
-            <div className="link connect" onClick={handleLogout}>
-              LOGOUT
-            </div>
-          )}
+          <div className="link connect" onClick={handleLogout}>
+            LOGOUT
+          </div>
         </div>
       )}
     </div>
