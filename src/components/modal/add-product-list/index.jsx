@@ -1,6 +1,17 @@
+import {
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  Table,
+} from 'antd';
+
 import { CustomTable } from '@/components/table';
+
 import './index.scss';
-import { Form, Input, Select, Table } from 'antd';
 
 const EditableCell = ({
   editing,
@@ -13,6 +24,32 @@ const EditableCell = ({
   gameLabel,
   ...restProps
 }) => {
+  const renderedComponent = () => {
+    if (dataIndex === 'gameName') {
+      return (
+        <Select
+          disabled={dataIndex === 'gameName' && children[1]}
+          className="select-add"
+          showSearch
+          placeholder="SELECT GAME"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          options={gameLabel}
+        />
+      );
+    }
+
+    if (dataIndex === 'dataUploaded') {
+      return <DatePicker className="date-input" />;
+    }
+
+    if (dataIndex === 'price') {
+      return <InputNumber className="input" />;
+    }
+  };
+
   return (
     <td {...restProps}>
       {editing ? (
@@ -27,23 +64,7 @@ const EditableCell = ({
               message: `Please Input ${title}!`,
             },
           ]}>
-          {dataIndex === 'gameName' ? (
-            <Select
-              disabled={dataIndex === 'gameName' && children[1]}
-              className="select-add"
-              showSearch
-              placeholder="SELECT GAME"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label ?? '')
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              options={gameLabel}
-            />
-          ) : (
-            <Input className="input" />
-          )}
+          {renderedComponent()}
         </Form.Item>
       ) : (
         children
@@ -59,6 +80,7 @@ const AddProductListModal = ({
   isEditing,
   cancel,
   gameLabel,
+  handleSubmit,
 }) => {
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
@@ -76,6 +98,7 @@ const AddProductListModal = ({
       }),
     };
   });
+
   return (
     <div className="modal-add-list-wrapper">
       <div className="table">
@@ -97,6 +120,20 @@ const AddProductListModal = ({
           />
         </Form>
       </div>
+
+      <Row justify={'end'} gutter={[12, 12]}>
+        <Col>
+          <button
+            onClick={handleSubmit}
+            type="button"
+            className="button"
+            style={{
+              marginRight: 8,
+            }}>
+            Upload
+          </button>
+        </Col>
+      </Row>
     </div>
   );
 };

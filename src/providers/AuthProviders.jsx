@@ -10,6 +10,7 @@ const AuthContextProvider = ({ children }) => {
       data: { data },
     } = await cmsAPI.login(payload);
 
+    localStorage.setItem('email', JSON.stringify(data.email));
     localStorage.setItem('role', JSON.stringify(data.role));
     localStorage.setItem(
       'walletAdresses',

@@ -469,7 +469,7 @@
 .detail-shop-wrapper {
   padding: 0 20px;
   @media only screen and (min-width: 900px) {
-    padding: 0 120px;
+    padding: 0 80px;
   }
   .header-filter {
     display: flex;
@@ -488,8 +488,12 @@
     .logo-wrapper {
       flex-grow: 1;
       width: 100%;
-      max-width: 300px;
-      text-align: center;
+      max-width: 25%;
+      text-align: start;
+
+      &.edit {
+        text-align: center;
+      }
       img {
         max-height: 100px;
         @media only screen and (min-width: 900px) {
@@ -499,9 +503,10 @@
     }
 
     .filter {
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
-      max-width: 500px;
+      // max-width: 50%;
       width: 100%;
 
       input {
@@ -577,7 +582,7 @@
           justify-content: center;
           align-items: center;
           gap: 10px;
-          max-width: 710px;
+          max-width: 50%;
         }
       }
     }
@@ -587,8 +592,10 @@
     display: grid;
     grid-template-columns: repeat(1, max-content);
     gap: 20px;
-    justify-content: center;
-    margin-top: 60px;
+    justify-content: start;
+    margin-top: 100px;
+    min-height: 80vh;
+    margin-bottom: 100px;
 
     @media only screen and (min-width: 700px) {
       grid-template-columns: repeat(2, max-content);
@@ -721,12 +728,11 @@
     .edit-section {
       flex-grow: 1;
       width: 100%;
-      max-width: 300px;
+      max-width: 25%;
       margin-top: 60px;
       text-align: center;
       display: flex;
       flex-direction: column;
-
       align-items: center;
 
       .edit-title {
@@ -745,6 +751,12 @@
         height: 251px;
         background-color: gray;
         border-radius: 20px;
+        overflow: hidden;
+
+        & > img {
+          object-fit: cover;
+          width: 251px;
+        }
       }
 
       .text-desc {
@@ -772,6 +784,9 @@
 
       .input {
         max-width: 238px !important;
+        padding: 0 10px;
+        font-size: 14px;
+        text-align: center;
       }
 
       .button {
@@ -786,12 +801,23 @@
     }
 
     .product-section {
+      width: 50%;
       @media only screen and (min-width: 700px) {
         grid-template-columns: repeat(2, max-content);
       }
       @media only screen and (min-width: 1000px) {
+        grid-template-columns: repeat(1fr, max-content);
+      }
+      @media only screen and (min-width: 1500px) {
         grid-template-columns: repeat(3, max-content);
       }
     }
   }
+}
+
+.loading-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

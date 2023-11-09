@@ -137,7 +137,7 @@ const AllAdmin = () => {
     };
     return (
       <Row>
-        <Col span={9} style={{ marginRight: '8px' }}>
+        <Col span={12} style={{ marginRight: '8px' }}>
           <button
             className="button activate"
             onClick={() => handleEditAdminStatus(payload, id)}>

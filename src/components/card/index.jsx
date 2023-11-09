@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import rankerCoinBadge from '@/assets/img/shop/ranker-coin.png';
+
 import check from '@/assets/img/check.png';
+import rankerCoinBadge from '@/assets/img/shop/ranker-coin.png';
 import uncheck from '@/assets/img/uncheck.png';
 import './index.scss';
 
-const checkImageUrl = (url = '') => {
+export const checkImageUrl = (url = '') => {
   const images = url.split('//');
+  if (images[0] === '')
+    return 'https://ipfs.io/ipfs/QmQtbA1RdTzRBLxEWAkdzdF7N1yxSyphfBDBak2DZYBBc9/B.gif';
   if (images[0] === 'https:') return url;
   else if (images[0] === 'ipfs:') return 'https://ipfs.io/ipfs/' + images[1];
 };
 
 const AddCard = ({ onClickCard, data, checkedStatus, idx }) => {
-  const { image, name, tokenId } = data;
+  const { image, name, tokenId, tokenType } = data;
   return (
     <div key={idx} className="item-card" onClick={() => onClickCard(data)}>
       <img
@@ -24,37 +27,42 @@ const AddCard = ({ onClickCard, data, checkedStatus, idx }) => {
         <img src={checkImageUrl(image)} alt="thumb" />
       </div>
       <div>
-        <div className="item-title">{name}</div>
+        <div className="item-title">{name ? name : '-'}</div>
         <div className="item-id">ITEM ID {tokenId.substring(0, 7)}</div>
-      </div>
-      <div className="price-title">Price</div>
-      <div className={`price-tag-wrapper `}>
-        <img
-          src={rankerCoinBadge}
-          alt=""
-          className="coin-icon"
-          style={{ width: '30px' }}
-        />
-        <div className="nominal">{data.price}</div>
+        <div className="item-id">{tokenType}</div>
       </div>
     </div>
   );
 };
 
-const ShowCard = ({ data, onEdit, idx, onClickCard, setShowEdit, showEdit }) => {
-  const { image, name } = data;
+const ShowCard = ({
+  data,
+  onEdit,
+  idx,
+  onClickCard,
+  setShowEdit,
+  showEdit,
+  onDelete,
+}) => {
+  const currentUserEmail = JSON.parse(localStorage.getItem('email'));
+  const { image, name, tokenId, price, idCollection, uploadedBy, tokenType } =
+    data;
+  const isTheOwner = currentUserEmail === uploadedBy;
   return (
     <div
       key={idx}
       className="item-card"
-      onMouseEnter={() => setShowEdit({ visible: true, id: idx })}
-      onMouseLeave={() => setShowEdit({ visible: false, id: -1 })}>
+      onMouseEnter={() => isTheOwner && setShowEdit({ visible: true, id: idx })}
+      onMouseLeave={() =>
+        isTheOwner && setShowEdit({ visible: false, id: -1 })
+      }>
       <div className="img-wrapper" onClick={onClickCard}>
         <img src={checkImageUrl(image)} alt="thumb" />
       </div>
       <div onClick={onClickCard}>
         <div className="item-title">{name}</div>
-        <div className="item-id">ITEM ID XXXX</div>
+        <div className="item-id">ITEM ID {tokenId ?? '-'}</div>
+        <div className="item-id">{tokenType}</div>
       </div>
       <div className="price-title">Price</div>
       <div
@@ -67,17 +75,21 @@ const ShowCard = ({ data, onEdit, idx, onClickCard, setShowEdit, showEdit }) => 
           className="coin-icon"
           style={{ width: '30px' }}
         />
-        <div className="nominal">0.0005</div>
+        <div className="nominal">{price}</div>
       </div>
-      <div
-        className={`edit-delete-wrapper ${
-          showEdit.visible && showEdit.id === idx ? 'visible' : 'hidden'
-        } `}>
-        <button className="delete">DELETE</button>
-        <button className="edit" onClick={() => onEdit(idx)}>
-          EDIT
-        </button>
-      </div>
+      {isTheOwner && (
+        <div
+          className={`edit-delete-wrapper ${
+            showEdit.visible && showEdit.id === idx ? 'visible' : 'hidden'
+          } `}>
+          <button className="delete" onClick={() => onDelete(idCollection)}>
+            DELETE
+          </button>
+          <button className="edit" onClick={() => onEdit(idCollection)}>
+            EDIT
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -98,32 +110,41 @@ const CardProduct = ({
   idx,
   onClickCard,
   purpose = 'show',
+  onDelete,
   cart = [],
 }) => {
   const newData = {
+    productId: data.contract.address + data.tokenId,
     image: data.rawMetadata.image,
     name: data.rawMetadata.name,
     tokenId: data.tokenId,
     tokenType: data.tokenType,
     address: data.contract.address,
     idx,
-    price: '-',
+    price: 'price' in data ? data.price : '',
+    gameName: null,
+    gameId: null,
+    idCollection: 'id' in data ? data.id : '',
+    ...data,
   };
+
   const [showEdit, setShowEdit] = useState(false);
 
   const addingToCart = (clickedData) => {
     let idx = cart.findIndex(
       (d) =>
-        d.tokenId === clickedData.tokenId && d.address === clickedData.address
+        d.productId === clickedData.productId &&
+        d.address === clickedData.address
     );
     if (idx < 0) {
       onClickCard((d) => [...d, clickedData]);
     } else {
       const filteredCart = cart.filter((d) => {
-        if (d.tokenId !== clickedData.tokenId) {
+        if (d.productId !== clickedData.productId) {
           return true;
-        } else if (
-          d.tokenId !== clickedData.tokenId &&
+        }
+        if (
+          d.productId !== clickedData.productId &&
           d.address !== clickedData.address
         ) {
           return true;
@@ -135,7 +156,7 @@ const CardProduct = ({
 
   const isChecked =
     cart.findIndex(
-      (d) => d.tokenId === newData.tokenId && d.address === newData.address
+      (d) => d.productId === newData.productId && d.address === newData.address
     ) < 0
       ? false
       : true;
@@ -149,6 +170,7 @@ const CardProduct = ({
         onEdit={onEdit}
         setShowEdit={setShowEdit}
         showEdit={showEdit}
+        onDelete={onDelete}
       />
     );
   } else {

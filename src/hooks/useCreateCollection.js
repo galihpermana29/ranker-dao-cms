@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+
+import { message } from 'antd';
 import { useContractWrite, usePrepareContractWrite } from 'wagmi';
 
 import { hasDuplicates } from '@/utils';
@@ -17,14 +20,18 @@ export const useCreateCollection = (
     abi: contractAbi,
     functionName: 'setApprovalForAll',
     args: [
-      '0xb735c8D829B40D4C6203ed6539D23Ee13c25e73e', // address of listing
+      import.meta.env.VITE_LISTING_CONTRACT, // address of listing
       true, // boolean
     ],
   });
 
-  const { writeAsync: setApprovalForAll } = useContractWrite(config);
+  const {
+    writeAsync: setApprovalForAll,
+    isLoading,
+    isSuccess,
+  } = useContractWrite(config);
 
-  const handleCreateCollections = async (value) => {
+  const handleCreateCollections = async (value, isNew = true) => {
     try {
       const { fields = [], game } = value;
       if (fields.length === 0) {
@@ -41,7 +48,6 @@ export const useCreateCollection = (
         fields,
         setContractMetadataError
       );
-
       if (payloadForGettingTheContractName) {
         const allAsyncApproval = fields.map((data) =>
           setApprovalForAll({
@@ -49,7 +55,7 @@ export const useCreateCollection = (
             abi: contractAbi,
             functionName: 'setApprovalForAll',
             args: [
-              '0xb735c8D829B40D4C6203ed6539D23Ee13c25e73e', // address of listing
+              import.meta.env.VITE_LISTING_CONTRACT, // address of listing
               true, // boolean approve
             ],
           })
@@ -57,6 +63,7 @@ export const useCreateCollection = (
 
         try {
           await Promise.all(allAsyncApproval);
+
           const responsesFromAlchemy = await gettingTheContractMetaData(
             payloadForGettingTheContractName
           );
@@ -66,7 +73,8 @@ export const useCreateCollection = (
             address: d.address,
             gameId: game,
           }));
-          await hittingAPICollection(payload);
+
+          if (isNew) await hittingAPICollection(payload);
         } catch (error) {
           return error;
         }
@@ -75,6 +83,17 @@ export const useCreateCollection = (
       setContractMetadataError('Error approval contract collection');
     }
   };
+
+  useEffect(() => {
+    if (isSuccess) message.loading('Permission to this collection has granted');
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (isLoading)
+      message.loading(
+        'Waiting for adding permission to the collection address'
+      );
+  }, [isLoading]);
 
   return { handleCreateCollections };
 };
