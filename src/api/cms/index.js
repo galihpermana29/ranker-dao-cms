@@ -50,6 +50,26 @@ function createCollection(payload) {
   return api.post(`/collections`, payload);
 }
 
+function createListingProduct(payload) {
+  return api.post(`/listings`, payload);
+}
+
+function updateListingProduct(payload, listingId) {
+  return api.put(`/listings/${listingId}`, payload);
+}
+
+function getListingProductByGame(query) {
+  return api.get(`/listings?${query}`);
+}
+
+function getListingProductById(id) {
+  return api.get(`/listings/${id}`);
+}
+
+function deleteListingProduct(id) {
+  return api.delete(`/listings/${id}`);
+}
+
 function editCollection(id, payload) {
   return api.put(`/collections/${id}`, payload);
 }
@@ -82,6 +102,11 @@ const cmsAPI = {
   sendingOTP,
   deleteCollection,
   editCollection,
+  createListingProduct,
+  updateListingProduct,
+  getListingProductByGame,
+  getListingProductById,
+  deleteListingProduct,
 };
 
 export default cmsAPI;

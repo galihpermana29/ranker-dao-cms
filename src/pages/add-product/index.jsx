@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Form, Popconfirm } from 'antd';
-import { usePrepareContractWrite, useContractWrite } from 'wagmi';
+import { Form, Popconfirm, message } from 'antd';
+import dayjs from 'dayjs';
+import {
+  usePrepareContractWrite,
+  useContractWrite,
+  useContractRead,
+} from 'wagmi';
 import './index.scss';
 
 import { getNftWithSpecificAddress } from '@/api/alchemy';
@@ -12,16 +17,15 @@ import { Modal } from '@/components/modal';
 import AddProductListModal from '@/components/modal/add-product-list';
 import {
   FailCollectionRewarding,
+  LoadingModal,
   SuccessCollectionRewarding,
 } from '@/components/modal/rewarding';
 import { useWalletContext } from '@/context/WalletContext';
+import { useCreateCollection } from '@/hooks/useCreateCollection';
 import { useStoreGamesData, useStoreNFTCollection } from '@/state';
-import { getUniqueAddress, params } from '@/utils';
-import {
-  checkContractAddressName,
-  gettingTheContractMetaData,
-} from '@/utils/collectionsUtils';
-import contractAbi from '@/utils/contract-abi-0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc.json';
+import { getUniqueAddress, params, prepareBatchListing } from '@/utils';
+import approveAbi from '@/utils/contract-abi-approval.json';
+import contractAbi from '@/utils/contract-listing.json';
 
 import failCollection from '../../assets/img/fail-collection.png';
 
@@ -31,29 +35,95 @@ const AddProduct = () => {
   const [form] = Form.useForm();
 
   const [showSort, setShowSort] = useState(false);
-
-  const [nftCollections, activeCollections, setNftCollections, setActive] =
-    useStoreNFTCollection((state) => [
-      state.nftCollections,
-      state.activeCollections,
-      state.setNftCollections,
-      state.setActive,
-    ]);
+  const [contractPayload, setContractPayload] = useState({
+    web3: [], // this is for 721erc
+    web2: [],
+    web4: [], //this is for 1155erc
+  });
   const [
-    // gamesData,
-    gamesOptionsForLabel,
-    setGamesData,
-    setGamesOptionsForLabel,
-  ] = useStoreGamesData((state) => [
-    // state.gamesData,
-    state.gamesOptionsForLabel,
-    state.setGamesData,
-    state.setGamesOptionsForLabel,
+    nftCollections,
+    activeCollections,
+    setNftCollections,
+    setActive,
+    setNftFilter,
+  ] = useStoreNFTCollection((state) => [
+    state.nftCollections,
+    state.activeCollections,
+    state.setNftCollections,
+    state.setActive,
+    state.setNftFilter,
   ]);
+  const [gamesOptionsForLabel, setGamesData, setGamesOptionsForLabel] =
+    useStoreGamesData((state) => [
+      state.gamesOptionsForLabel,
+      state.setGamesData,
+      state.setGamesOptionsForLabel,
+    ]);
+
   let [cart, setCart] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
   const [loading, setLoading] = useState(false);
   const [editingKey, setEditingKey] = useState('');
+  const [contractNftToApprove, setContractNftToApprove] = useState(null);
+
+  const { config } = usePrepareContractWrite({
+    address: import.meta.env.VITE_LISTING_CONTRACT,
+    abi: contractAbi,
+    functionName: 'batchERC721Listing',
+    args: [
+      contractPayload.web3[0] ?? '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8',
+      contractPayload.web3[1] ?? [],
+    ],
+    enabled: true,
+  });
+
+  /**
+   * Contract write for adding ERC721
+   */
+
+  const {
+    write: addingListing,
+    isSuccess,
+    isError,
+    isLoading,
+  } = useContractWrite(config);
+
+  const { config: erc1155Config } = usePrepareContractWrite({
+    address: import.meta.env.VITE_LISTING_CONTRACT,
+    abi: contractAbi,
+    functionName: 'addERC1155Listing',
+    args: [
+      contractPayload.web4[0] ?? '100', //price
+      contractPayload.web4[1] ?? '0xbb234d9a79db8bcb880b7a52a243be2087b70812',
+      contractPayload.web4[2] ?? '2', //token id
+      '1',
+    ],
+    enabled: true,
+  });
+
+  /**
+   * Contract write for adding ERC1155
+   */
+
+  const {
+    write: addERC1155Listing,
+    isSuccess: success1155,
+    isError: error1155,
+    isLoading: loading1155,
+  } = useContractWrite(erc1155Config);
+
+  /**
+   * Read contract for check is approve status from blockchain
+   */
+
+  const { refetch: checkIsApproved } = useContractRead({
+    address: contractNftToApprove
+      ? contractNftToApprove
+      : '0xbb234d9a79db8bcb880b7a52a243be2087b70812',
+    abi: approveAbi,
+    functionName: 'isApprovedForAll',
+    args: [address, import.meta.env.VITE_LISTING_CONTRACT],
+  });
 
   const hittingAPICollection = async (payload) => {
     try {
@@ -63,28 +133,15 @@ const AddProduct = () => {
     }
   };
 
-  const handleCreatingNewCollection = async (
-    payloadForGettingTheContractName,
-    game
-  ) => {
-    try {
-      const responsesFromAlchemy = await gettingTheContractMetaData(
-        payloadForGettingTheContractName
-      );
-      const payload = responsesFromAlchemy.map((d) => ({
-        name: checkContractAddressName(d.name),
-        address: d.address,
-        gameId: game,
-      }));
-      await hittingAPICollection(payload);
-    } catch (error) {
-      console.log(error, 'err');
-    }
-  };
+  const { handleCreateCollections } = useCreateCollection(
+    message.error,
+    hittingAPICollection
+  );
 
   const isEditing = (record) => record.key === editingKey;
 
   const edit = (record) => {
+    record.dataUploaded = dayjs(record.dataUploaded);
     form.setFieldsValue({
       ...record,
     });
@@ -99,14 +156,45 @@ const AddProduct = () => {
     try {
       let row = await form.validateFields();
       const key = record.key;
+      let isNew = false;
+
       const newData = [...cart];
       const index = newData.findIndex((item) => key === item.key);
+      row.dataUploaded = dayjs(row.dataUploaded).format('DD-MM-YYYY');
 
       if (index > -1) {
         let item = newData[index];
+        let gameId = row.gameName;
+
+        // if the contract address doesnt related to any of the collection in db
         if (editingKey === record.key && item.gameName === null) {
-          await handleCreatingNewCollection([item.address], row.gameName);
+          // convert id to the name
+          row.gameName = gamesOptionsForLabel.filter(
+            (d) => d.value === row.gameName
+          )[0].label;
+          isNew = true;
         }
+
+        setContractNftToApprove(item.address);
+
+        const { data: isSetApproveAll } = await checkIsApproved();
+        if (!isSetApproveAll || isNew) {
+          await handleCreateCollections(
+            {
+              fields: [{ name: item.address }],
+              game: gameId,
+            },
+            isNew
+          );
+
+          if (isNew) handleNextAction();
+        }
+
+        // convert back the gameName to the id
+        row.gameId = gamesOptionsForLabel.filter(
+          (d) => d.label === row.gameName
+        )[0].value;
+
         newData.splice(index, 1, { ...item, ...row });
         setCart(newData);
 
@@ -210,7 +298,7 @@ const AddProduct = () => {
 
   const handleNextAction = async () => {
     if (cart.length === 0) {
-      console.log('Cannot next when you are not select an item');
+      message.info('Cannot next when you are not select an item');
     } else {
       await gettingGameByContractAddress(cart);
       setIsOpenModal({
@@ -237,6 +325,147 @@ const AddProduct = () => {
     setActive('ALL');
   };
 
+  const handleSubmitForm = async () => {
+    const isPriceValid = cart.every(
+      (item) => item.price !== '' && !isNaN(item.price)
+    );
+
+    if (isPriceValid) {
+      const {
+        payloadWeb3: { erc721, erc1155 },
+        payloadWeb2,
+      } = prepareBatchListing(cart);
+
+      erc721.forEach((data, idx) => {
+        setTimeout(() => {
+          setContractPayload((contractPayload) => ({
+            ...contractPayload,
+            web3: [data.address, [...data.data]],
+          }));
+        }, 1000 * idx);
+      });
+      erc1155.forEach((data) => {
+        data.data.forEach((d, idx) => {
+          setTimeout(() => {
+            setContractPayload((contractPayload) => ({
+              ...contractPayload,
+              web4: [d.price, data.address, d.tokenId],
+            }));
+          }, 1000 * idx);
+        });
+      });
+
+      setContractPayload((contractPayload) => ({
+        ...contractPayload,
+        web2: payloadWeb2,
+      }));
+    } else {
+      message.info('Make sure all of the items has been filled out');
+    }
+  };
+
+  const interactListing = () => {
+    try {
+      addingListing();
+    } catch (error) {
+      message.error('Error blockchain network is busy, try again!');
+    }
+  };
+
+  const interactListing115 = () => {
+    try {
+      addERC1155Listing();
+    } catch (error) {
+      message.error('Error blockchain network is busy, try again!');
+    }
+  };
+
+  const createListingProduct = async () => {
+    try {
+      await cmsAPI.createListingProduct(contractPayload.web2);
+      setIsOpenModal({ visible: true, type: 'successCollection' });
+    } catch (error) {
+      message.error('Error duplicate product!');
+    }
+  };
+
+  useEffect(() => {
+    if (contractPayload.web3.length > 0 && contractPayload.web4.length > 0) {
+      if (isSuccess && success1155) {
+        createListingProduct();
+      }
+    }
+    if (contractPayload.web3.length > 0 && contractPayload.web4.length === 0) {
+      if (isSuccess) {
+        createListingProduct();
+      }
+    }
+    if (
+      contractPayload.web3.length === 0 &&
+      contractPayload.web4.length === 0
+    ) {
+      if (success1155) {
+        createListingProduct();
+      }
+    }
+  }, [isSuccess, success1155]);
+
+  useEffect(() => {
+    if (isError || error1155) {
+      setIsOpenModal({ visible: true, type: 'metamaskError' });
+    }
+  }, [isError, error1155]);
+
+  useEffect(() => {
+    if (isLoading || loading1155) {
+      setIsOpenModal({ visible: true, type: 'loading' });
+    }
+  }, [isLoading, loading1155]);
+
+  useEffect(() => {
+    if (contractPayload.web4.length > 0) {
+      interactListing115();
+    }
+  }, [contractPayload.web4]);
+
+  useEffect(() => {
+    if (contractPayload.web3.length > 0) {
+      interactListing();
+    }
+  }, [contractPayload.web3]);
+
+  useEffect(() => {
+    const getAllGamesData = async () => {
+      try {
+        const data = await cmsAPI.getAllGames();
+        setGamesData(data);
+        setGamesOptionsForLabel(data);
+      } catch (error) {
+        console.log(error, 'error while getting data games');
+      }
+    };
+    getAllGamesData();
+  }, []);
+
+  useEffect(() => {
+    const getNFT = async () => {
+      setLoading(true);
+      try {
+        const nfts = await getNftWithSpecificAddress(address);
+        mappingNFTPerCollection(nfts.ownedNfts);
+        setLoading(false);
+      } catch (error) {
+        console.log(error, 'error when getting nft from the wallet account');
+      }
+    };
+    if (address && errors !== 'WALLET MISSMATCHED') {
+      getNFT();
+    }
+    if (errors === 'WALLET MISSMATCHED') {
+      setIsOpenModal({ type: 'missmatched', visible: true });
+    }
+  }, [address, errors]);
+
   const modalTypeDict = {
     addProductModal: (
       <AddProductListModal
@@ -246,12 +475,13 @@ const AddProduct = () => {
         isEditing={isEditing}
         cancel={cancel}
         gameLabel={gamesOptionsForLabel}
+        handleSubmit={handleSubmitForm}
       />
     ),
     successCollection: (
       <SuccessCollectionRewarding
-        title={'COLLECTION ADDED!'}
-        desc={'New collection category successfully added!'}
+        title={'PRODUCT ADDED!'}
+        desc={'New product listing successfully added!'}
       />
     ),
     failCollection: (
@@ -268,77 +498,42 @@ const AddProduct = () => {
         }
       />
     ),
+    metamaskError: (
+      <FailCollectionRewarding
+        title={'METAMASK ERROR'}
+        desc={'Please try again or check your internet connection!'}
+      />
+    ),
+    loading: (
+      <LoadingModal
+        title={'IT TAKES A TIME..'}
+        desc={'Please dont close this tab and approve the transactions'}
+      />
+    ),
   };
-
-  const { config, error, isError } = usePrepareContractWrite({
-    address: '0x724eCC907C003eB1DEFa66Cb0C1F95797C66AaFc',
-    abi: contractAbi,
-    functionName: 'addERC721Listing',
-    args: [
-      parseInt(200), // price
-      '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8', // contractAddr
-      parseInt(449), // tokenId
-    ],
-  });
-
-  const { write: addERC721Listing, isSuccess } = useContractWrite(config);
-
-  const addNft = async () => {
-    try {
-      addERC721Listing?.();
-    } catch (error) {
-      console.log(error, 'error add nft');
-    }
-  };
-
-  useEffect(() => {
-    const getAllGamesData = async () => {
-      try {
-        const {
-          data: { data },
-        } = await cmsAPI.getAllGames();
-        setGamesData(data);
-        setGamesOptionsForLabel(data);
-      } catch (error) {
-        console.log(error, 'error while getting data games');
-      }
-    };
-    getAllGamesData();
-  }, []);
-
-  useEffect(() => {
-    const getNFT = async () => {
-      setLoading(true);
-      try {
-        const nfts = await getNftWithSpecificAddress(address);
-        console.log(nfts, 'nfts');
-        mappingNFTPerCollection(nfts.ownedNfts);
-        setLoading(false);
-      } catch (error) {
-        console.log(error, 'error when getting nft from the wallet account');
-      }
-    };
-    if (address && errors !== 'WALLET MISSMATCHED') {
-      getNFT();
-    }
-    if (errors === 'WALLET MISSMATCHED') {
-      setIsOpenModal({ type: 'missmatched', visible: true });
-    }
-  }, [address, errors]);
 
   return (
     <LoadingProcessComponent loading={loading}>
       {address ? (
         <div className="add-wrapper">
           <Modal
-            maxWidth={1200}
+            maxWidth={
+              ['addProductModal'].includes(isOpenModal.type) ? 1200 : 500
+            }
             isOpen={isOpenModal.visible}
             onClose={() => setIsOpenModal({ visible: false, type: '' })}>
             {modalTypeDict?.[isOpenModal.type] || <></>}
           </Modal>
           <div className={`filter`}>
             <div className="input-wrapper">
-              <input type="text" className="input" />
+              <input
+                placeholder="SEARCH BY NFT NAME"
+                type="text"
+                className="input"
+                onChange={(e) =>
+                  setNftFilter(e.target.value, 'search', activeCollections)
+                }
+              />
             </div>
             <div className={`button-wrapper `}>
               <div className={`sort`}>
@@ -349,17 +544,15 @@ const AddProduct = () => {
                 </button>
                 <div
                   className={`list ${showSort ? 'show' : ''}`}
-                  onClick={(e) => console.dir(e.target.innerText, 'd')}>
+                  onClick={(e) =>
+                    setNftFilter(e.target.innerText, 'sort', activeCollections)
+                  }>
                   <div className="list-item">ALPHABET</div>
                   <div className="list-item">LAST UPDATED</div>
-                  <div className="list-item">LATEST UPLOADED</div>
-                  <div className="list-item">LATEST UPLOADED</div>
-                  <div className="list-item">PRICE</div>
+                  <div className="list-item">RESET</div>
                 </div>
               </div>
-              <button className="button" onClick={() => addNft()}>
-                ADD NFT
-              </button>
+              <button className="button">GO BACK</button>
             </div>
           </div>
           <div className="content">

@@ -1,8 +1,10 @@
 import './index.scss';
-import passwordResetImage from '@/assets/img/password-reset.png';
+import { Spin } from 'antd';
+
 import adminrewardingImage from '@/assets/img/admin-rewarding.png';
-import successCollection from '@/assets/img/success-collection.png';
 import failCollection from '@/assets/img/fail-collection.png';
+import passwordResetImage from '@/assets/img/password-reset.png';
+import successCollection from '@/assets/img/success-collection.png';
 
 export const SuccessResetPassword = () => {
   return (
@@ -44,6 +46,20 @@ export const FailCollectionRewarding = ({ title, desc }) => {
   return (
     <div className="reward-wrapper">
       <img src={failCollection} alt="" className="reward-image" />
+      <div className="text">
+        <div className="title-reward">{title}</div>
+        <div className="desc-reward">{desc}</div>
+      </div>
+    </div>
+  );
+};
+
+export const LoadingModal = ({ title, desc }) => {
+  return (
+    <div className="reward-wrapper">
+      <div className="loading">
+        <Spin />
+      </div>
       <div className="text">
         <div className="title-reward">{title}</div>
         <div className="desc-reward">{desc}</div>

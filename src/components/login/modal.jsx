@@ -25,7 +25,7 @@ export const EnterEmail = ({ onSubmit }) => {
           />
         </Form.Item>
         <Form.Item noStyle>
-          <button htmlType="submit" className="button">
+          <button type="submit" className="button">
             SEND
           </button>
         </Form.Item>
