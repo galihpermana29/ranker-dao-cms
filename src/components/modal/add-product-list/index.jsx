@@ -1,15 +1,4 @@
-import {
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-  Table,
-} from 'antd';
-
-import { CustomTable } from '@/components/table';
+import { Col, DatePicker, Form, InputNumber, Row, Select, Table } from 'antd';
 
 import './index.scss';
 
