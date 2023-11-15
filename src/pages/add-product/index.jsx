@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Form, Popconfirm, message } from 'antd';
+import { Col, Form, Popconfirm, Row, message } from 'antd';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import {
   usePrepareContractWrite,
   useContractWrite,
@@ -33,7 +34,7 @@ const AddProduct = () => {
   const { address, errors } = useWalletContext();
 
   const [form] = Form.useForm();
-
+  const navigate = useNavigate();
   const [showSort, setShowSort] = useState(false);
   const [contractPayload, setContractPayload] = useState({
     web3: [], // this is for 721erc
@@ -212,6 +213,11 @@ const AddProduct = () => {
     }
   };
 
+  const deleteRecord = async (record) => {
+    const deleteCart = cart.filter((c) => c.idx !== record.idx);
+    setCart(deleteCart);
+  };
+
   const columns = [
     {
       title: 'No',
@@ -243,29 +249,52 @@ const AddProduct = () => {
       dataIndex: 'operation',
       render: (_, record) => {
         const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <button
-              className="button"
-              onClick={() => save(record)}
-              style={{
-                marginRight: 8,
-              }}>
-              Save
-            </button>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <button className="button" style={{ marginTop: '1rem' }}>
-                Cancel
-              </button>
-            </Popconfirm>
-          </span>
-        ) : (
-          <button
-            className="button"
-            disabled={editingKey !== ''}
-            onClick={() => edit(record)}>
-            Edit
-          </button>
+        return (
+          <Row gutter={[12, 12]}>
+            <Col>
+              {editable ? (
+                <Row>
+                  <Col>
+                    <button
+                      className="button"
+                      onClick={() => save(record)}
+                      style={{
+                        marginRight: 8,
+                      }}>
+                      Save
+                    </button>
+                  </Col>
+                  <Col>
+                    <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+                      <button className="button" style={{ marginTop: '1rem' }}>
+                        Cancel
+                      </button>
+                    </Popconfirm>
+                  </Col>
+                </Row>
+              ) : (
+                <button
+                  className="button"
+                  disabled={editingKey !== ''}
+                  onClick={() => edit(record)}>
+                  Edit
+                </button>
+              )}
+            </Col>
+
+            {!editable && (
+              <Col>
+                <button
+                  className="button"
+                  onClick={() => deleteRecord(record)}
+                  style={{
+                    marginRight: 8,
+                  }}>
+                  Delete
+                </button>
+              </Col>
+            )}
+          </Row>
         );
       },
     },
@@ -385,7 +414,7 @@ const AddProduct = () => {
       await cmsAPI.createListingProduct(contractPayload.web2);
       setIsOpenModal({ visible: true, type: 'successCollection' });
     } catch (error) {
-      message.error('Error duplicate product!');
+      setIsOpenModal({ visible: true, type: 'duplicateNft' });
     }
   };
 
@@ -400,10 +429,7 @@ const AddProduct = () => {
         createListingProduct();
       }
     }
-    if (
-      contractPayload.web3.length === 0 &&
-      contractPayload.web4.length === 0
-    ) {
+    if (contractPayload.web3.length === 0 && contractPayload.web4.length > 0) {
       if (success1155) {
         createListingProduct();
       }
@@ -490,6 +516,12 @@ const AddProduct = () => {
         desc={'Please try again or check your internet connection!'}
       />
     ),
+    duplicateNft: (
+      <FailCollectionRewarding
+        title={'UPDATE FAILED'}
+        desc={'This NFT is already in the listing! Error duplicate'}
+      />
+    ),
     missmatched: (
       <FailCollectionRewarding
         title={'WRONG WALLET ADDRESS'}
@@ -552,7 +584,9 @@ const AddProduct = () => {
                   <div className="list-item">RESET</div>
                 </div>
               </div>
-              <button className="button">GO BACK</button>
+              <button className="button" onClick={() => navigate(-1)}>
+                GO BACK
+              </button>
             </div>
           </div>
           <div className="content">
