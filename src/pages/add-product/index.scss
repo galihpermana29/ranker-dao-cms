@@ -131,7 +131,9 @@
     .content-card {
       width: 75%;
       .body-wrapper {
-        width: 75%;
+        max-height: 90vh;
+        overflow-y: scroll;
+        width: 100%;
         display: grid;
         grid-template-columns: repeat(1, max-content);
         gap: 35px;

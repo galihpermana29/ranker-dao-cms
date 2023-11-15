@@ -1,7 +1,7 @@
 import Triangle from 'assets/img/shop/more-games.png';
 
 const ShopSelector = ({ setActiveGame, list = {} }) => {
-  const onClickChangeGame = game => {
+  const onClickChangeGame = (game) => {
     setActiveGame(game);
   };
 
