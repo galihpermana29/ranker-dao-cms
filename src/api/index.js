@@ -11,7 +11,7 @@ const createAPI = (
     baseURL,
     withCredentials: true,
     headers: {
-      //'Access-Control-Allow-Origin': 'https://staging-api-shop.rankerdao.com',
+      'Access-Control-Allow-Origin': 'https://staging-api-shop.rankerdao.com',
       'Content-Type': 'application/json',
     },
     ...config,
