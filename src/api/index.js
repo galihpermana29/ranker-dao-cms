@@ -9,7 +9,7 @@ const createAPI = (
 ) => {
   const axiosInstance = axios.create({
     baseURL,
-    withCredentials: true,
+    withCredentials: false,
     headers: {
       //'Access-Control-Allow-Origin': 'https://staging-api-shop.rankerdao.com',
       'Content-Type': 'application/json',
