@@ -45,9 +45,40 @@ const ShowCard = ({
   onDelete,
 }) => {
   const currentUserEmail = JSON.parse(localStorage.getItem('email'));
+  const role = JSON.parse(localStorage.getItem('role'));
   const { image, name, tokenId, price, idCollection, uploadedBy, tokenType } =
     data;
-  const isTheOwner = currentUserEmail === uploadedBy;
+  const isTheOwner = currentUserEmail === uploadedBy || role === 'superAdmin';
+
+  if (data.sold) {
+    return (
+      <div key={idx} className="item-card">
+        <div className="img-wrapper" onClick={onClickCard}>
+          <div className="bg-sold">SOLD</div>
+          <img src={checkImageUrl(image)} alt="thumb" />
+        </div>
+        <div onClick={onClickCard}>
+          <div className="item-title">{name}</div>
+          <div className="item-id">ITEM ID {tokenId ?? '-'}</div>
+          <div className="item-id">{tokenType}</div>
+        </div>
+        <div className="price-title">Prices</div>
+        <div
+          className={`price-tag-wrapper ${
+            showEdit.visible && showEdit.id === idx ? 'hidden' : 'visible'
+          } `}>
+          <img
+            src={rankerCoinBadge}
+            alt=""
+            className="coin-icon"
+            style={{ width: '30px' }}
+          />
+          <div className="nominal">{price}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       key={idx}

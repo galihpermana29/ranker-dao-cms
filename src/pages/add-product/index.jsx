@@ -363,7 +363,7 @@ const AddProduct = () => {
       const {
         payloadWeb3: { erc721, erc1155 },
         payloadWeb2,
-      } = prepareBatchListing(cart);
+      } = prepareBatchListing(cart, address);
 
       erc721.forEach((data, idx) => {
         setTimeout(() => {
@@ -371,17 +371,20 @@ const AddProduct = () => {
             ...contractPayload,
             web3: [data.address, [...data.data]],
           }));
-        }, 1000 * idx);
+        }, 1000 * idx + 1);
       });
-      erc1155.forEach((data) => {
-        data.data.forEach((d, idx) => {
-          setTimeout(() => {
-            setContractPayload((contractPayload) => ({
-              ...contractPayload,
-              web4: [d.price, data.address, d.tokenId],
-            }));
-          }, 1000 * idx);
-        });
+
+      erc1155.forEach((data, idx) => {
+        setTimeout(() => {
+          data.data.forEach((d, idx) => {
+            setTimeout(() => {
+              setContractPayload((contractPayload) => ({
+                ...contractPayload,
+                web4: [d.price, data.address, d.tokenId],
+              }));
+            }, 1000 * idx + 1);
+          });
+        }, 1000 * idx + 1);
       });
 
       setContractPayload((contractPayload) => ({

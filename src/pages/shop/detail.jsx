@@ -30,6 +30,8 @@ const DetailShop = () => {
 
   const [data, setData] = useState({ logo: '' });
 
+  const role = JSON.parse(localStorage.getItem('role'));
+
   const { gameId } = useParams();
   const navigate = useNavigate();
 
@@ -58,6 +60,7 @@ const DetailShop = () => {
     state.setDetailNFT,
     state.setListedFilteredNFT,
   ]);
+  const [detailPrice, setDetailPrice] = useState(detailNFT?.price);
 
   const onClickEdit = (ids) => {
     navigate(`/edit/${gameId}/${ids}`);
@@ -75,12 +78,16 @@ const DetailShop = () => {
     }
   };
 
+  const onClickDetailCard = async (value) => {
+    setIsOpenModal({ visible: true, type: 'productDetail', data: value });
+  };
+
   const onClickGoBack = () => {
     navigate(`/detail/${gameId}`);
   };
 
   const modalTypeDict = {
-    productDetail: <ProductDetailModal />,
+    productDetail: <ProductDetailModal data={isOpenModal.data} />,
     metamaskError: (
       <FailCollectionRewarding
         title={'METAMASK ERROR'}
@@ -166,18 +173,40 @@ const DetailShop = () => {
     }
   );
 
-  const { config: erc1155Config, refetch: refetch1155 } =
+  const { config: setPriceConfig, refetch: refetchPrice } =
     usePrepareContractWrite({
       address: import.meta.env.VITE_LISTING_CONTRACT,
       abi: contractAbi,
-      functionName: 'addERC1155Listing',
+      functionName: 'setPrice',
       args: [
         contractPayload.web3[0] ?? '100', //price
         contractPayload.web3[1] ?? '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8',
         contractPayload.web3[2] ?? '233', //token
-        '1',
       ],
     });
+
+  const {
+    config: erc1155Config,
+    refetch: refetch1155,
+    error,
+  } = usePrepareContractWrite({
+    address: import.meta.env.VITE_LISTING_CONTRACT,
+    abi: contractAbi,
+    functionName: 'addERC1155Listing',
+    args: [
+      contractPayload.web3[0] ?? '100', //price
+      contractPayload.web3[1] ?? '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8',
+      contractPayload.web3[2] ?? '233', //token
+      '1',
+    ],
+  });
+
+  const {
+    write: setPrice,
+    isSuccess: successPrice,
+    isError: errorPrice,
+    isLoading: loadingPrice,
+  } = useContractWrite(setPriceConfig);
 
   const {
     write: addERC1155Listing,
@@ -195,19 +224,36 @@ const DetailShop = () => {
 
   const handleUpdateNFT = async () => {
     try {
-      if (contractPayload.web2.length === 0) return;
-      if (contractPayload.web2.rawData.tokenType === 'ERC721') {
-        refetch721?.();
-        addERC721Listing?.();
-      }
+      if (contractPayload.web2.length === 0)
+        return message.error('No price changes');
 
-      if (contractPayload.web2.rawData.tokenType === 'ERC1155') {
-        refetch1155?.();
-        addERC1155Listing?.();
-      }
+      if (role === 'superAdmin') {
+        refetchPrice?.();
+        setPrice?.();
 
-      getDetailListing();
+        if (errorPrice) {
+          setIsOpenModal({ visible: true, type: 'metamaskError' });
+        }
+      } else {
+        if (contractPayload.web2.rawData.tokenType === 'ERC721') {
+          refetch721?.();
+          addERC721Listing?.();
+
+          if (error721) {
+            setIsOpenModal({ visible: true, type: 'metamaskError' });
+          }
+        }
+
+        if (contractPayload.web2.rawData.tokenType === 'ERC1155') {
+          refetch1155?.();
+          addERC1155Listing?.();
+          if (error1155) {
+            setIsOpenModal({ visible: true, type: 'metamaskError' });
+          }
+        }
+      }
     } catch (error) {
+      setIsOpenModal({ visible: true, type: 'metamaskError' });
       message.error('Error in web3');
     }
   };
@@ -225,26 +271,30 @@ const DetailShop = () => {
   };
 
   useEffect(() => {
-    if (success721 || success1155) {
+    if (success721 || success1155 || successPrice) {
       updateListingProduct();
     }
-  }, [success721, success1155]);
+  }, [success721, success1155, successPrice]);
 
   useEffect(() => {
-    if (error721 || error1155) {
+    if (error721 || error1155 || errorPrice) {
       setIsOpenModal({ visible: true, type: 'metamaskError' });
     }
-  }, [error721, error1155]);
+  }, [error721, error1155, errorPrice]);
 
   useEffect(() => {
-    if (loading721 || loading1155) {
+    if (loading721 || loading1155 || loadingPrice) {
       setIsOpenModal({ visible: true, type: 'loading' });
     }
-  }, [loading721, loading1155]);
+  }, [loading721, loading1155, loadingPrice]);
 
   useEffect(() => {
     if (listingId) {
       getDetailListing();
+      setContractPayload({
+        web3: [],
+        web2: [],
+      });
     }
   }, [listingId]);
 
@@ -260,6 +310,10 @@ const DetailShop = () => {
       setIsOpenModal({ type: 'missmatched', visible: true });
     }
   }, [address, errors]);
+
+  useEffect(() => {
+    setDetailPrice(detailNFT?.price);
+  }, [detailNFT]);
 
   if (loading) {
     return (
@@ -361,23 +415,26 @@ const DetailShop = () => {
                   disabled
                 />
                 <div className="address-title">PRICE</div>
-                <input
-                  type="text"
-                  name="address"
-                  id="address"
-                  className="input"
-                  defaultValue={detailNFT?.price}
-                  onChange={(e) =>
-                    setContractPayload({
-                      web3: [
-                        e.target.value,
-                        detailNFT?.contractAddress,
-                        detailNFT?.tokenId,
-                      ],
-                      web2: { ...detailNFT, price: e.target.value },
-                    })
-                  }
-                />
+                {detailNFT?.price && (
+                  <input
+                    type="text"
+                    name="address"
+                    id="address"
+                    className="input"
+                    value={detailPrice}
+                    onChange={(e) => {
+                      setDetailPrice(e.target.value);
+                      setContractPayload({
+                        web3: [
+                          e.target.value,
+                          detailNFT?.contractAddress,
+                          detailNFT?.tokenId,
+                        ],
+                        web2: { ...detailNFT, price: e.target.value },
+                      });
+                    }}
+                  />
+                )}
                 <button className="button update" onClick={handleUpdateNFT}>
                   UPDATE LISTING
                 </button>
@@ -392,9 +449,7 @@ const DetailShop = () => {
                       idx={idx}
                       onEdit={onClickEdit}
                       onDelete={onClickDelete}
-                      onClickCard={() =>
-                        setIsOpenModal({ visible: true, type: 'productDetail' })
-                      }
+                      onClickCard={() => onClickDetailCard(collection)}
                       data={collection}
                     />
                   </div>
@@ -409,9 +464,7 @@ const DetailShop = () => {
                     idx={idx}
                     onEdit={onClickEdit}
                     onDelete={onClickDelete}
-                    onClickCard={() =>
-                      setIsOpenModal({ visible: true, type: 'productDetail' })
-                    }
+                    onClickCard={() => onClickDetailCard(collection)}
                     data={collection}
                   />
                 </div>
