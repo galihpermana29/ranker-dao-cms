@@ -38,7 +38,7 @@ export function transformErcData(data) {
   return dataTransformed;
 }
 
-export function prepareBatchListing(inputData) {
+export function prepareBatchListing(inputData, lister) {
   const erc721Data = inputData.filter((data) => data.tokenType === 'ERC721');
   const erc1155Data = inputData.filter((data) => data.tokenType === 'ERC1155');
 
@@ -51,7 +51,7 @@ export function prepareBatchListing(inputData) {
     title: item.name,
     gameId: item.gameId,
     price: item.price,
-    raw_data: JSON.stringify({ ...item }), // Include all data that is not specified
+    raw_data: JSON.stringify({ ...item, lister }), // Include all data that is not specified
     uploadedBy: JSON.parse(localStorage.getItem('email')),
   }));
 
