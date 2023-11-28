@@ -135,6 +135,12 @@
       border: none;
 
       border-bottom-right-radius: 10px;
+
+      &.sold {
+        border: 1px solid red;
+        background-color: gray !important;
+        cursor: not-allowed;
+      }
     }
   }
 }

@@ -52,7 +52,15 @@ const ShowCard = ({
 
   if (data.sold) {
     return (
-      <div key={idx} className="item-card">
+      <div
+        key={idx}
+        className="item-card"
+        onMouseEnter={() =>
+          isTheOwner && setShowEdit({ visible: true, id: idx })
+        }
+        onMouseLeave={() =>
+          isTheOwner && setShowEdit({ visible: false, id: -1 })
+        }>
         <div className="img-wrapper" onClick={onClickCard}>
           <div className="bg-sold">SOLD</div>
           <img src={checkImageUrl(image)} alt="thumb" />
@@ -75,6 +83,17 @@ const ShowCard = ({
           />
           <div className="nominal">{price}</div>
         </div>
+        {isTheOwner && (
+          <div
+            className={`edit-delete-wrapper ${
+              showEdit.visible && showEdit.id === idx ? 'visible' : 'hidden'
+            } `}>
+            <button className="delete" onClick={() => onDelete(idCollection)}>
+              DELETE
+            </button>
+            <button className="edit sold">EDIT</button>
+          </div>
+        )}
       </div>
     );
   }

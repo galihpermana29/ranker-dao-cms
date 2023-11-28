@@ -160,6 +160,11 @@ const DetailShop = () => {
     }
   };
 
+  /**
+   * addERC721Listing()
+   * Prepare contract to write 721 erc
+   */
+
   const { config: erc721Config, refetch: refetch721 } = usePrepareContractWrite(
     {
       address: import.meta.env.VITE_LISTING_CONTRACT,
@@ -173,6 +178,28 @@ const DetailShop = () => {
     }
   );
 
+  /**
+   * addERC1155Listing()
+   * Prepare contract to write 1155 erc
+   */
+
+  const { config: erc1155Config, refetch: refetch1155 } =
+    usePrepareContractWrite({
+      address: import.meta.env.VITE_LISTING_CONTRACT,
+      abi: contractAbi,
+      functionName: 'addERC1155Listing',
+      args: [
+        contractPayload.web3[0] ?? '100', //price
+        contractPayload.web3[1] ?? '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8',
+        contractPayload.web3[2] ?? '233', //token
+        '1',
+      ],
+    });
+
+  /**
+   * setPrice()
+   * prepare contract write to setPrice
+   */
   const { config: setPriceConfig, refetch: refetchPrice } =
     usePrepareContractWrite({
       address: import.meta.env.VITE_LISTING_CONTRACT,
@@ -184,22 +211,6 @@ const DetailShop = () => {
         contractPayload.web3[2] ?? '233', //token
       ],
     });
-
-  const {
-    config: erc1155Config,
-    refetch: refetch1155,
-    error,
-  } = usePrepareContractWrite({
-    address: import.meta.env.VITE_LISTING_CONTRACT,
-    abi: contractAbi,
-    functionName: 'addERC1155Listing',
-    args: [
-      contractPayload.web3[0] ?? '100', //price
-      contractPayload.web3[1] ?? '0x4a1c82542ebdb854ece6ce5355b5c48eb299ecd8',
-      contractPayload.web3[2] ?? '233', //token
-      '1',
-    ],
-  });
 
   const {
     write: setPrice,
@@ -222,12 +233,16 @@ const DetailShop = () => {
     isLoading: loading721,
   } = useContractWrite(erc721Config);
 
+  /**
+   * This function is to update NFT Price to blockchains
+   */
   const handleUpdateNFT = async () => {
     try {
       if (contractPayload.web2.length === 0)
-        return message.error('No price changes');
+        return message.info('Please make some price changes');
 
       if (role === 'superAdmin') {
+        console.log(contractPayload, 'payload');
         refetchPrice?.();
         setPrice?.();
 
@@ -258,6 +273,9 @@ const DetailShop = () => {
     }
   };
 
+  /**
+   * update price to backend
+   */
   const updateListingProduct = async () => {
     try {
       await cmsAPI.updateListingProduct(

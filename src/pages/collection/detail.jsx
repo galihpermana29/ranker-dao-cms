@@ -36,6 +36,7 @@ const DetailCollection = () => {
 
   const [showSort, setShowSort] = useState(false);
   const [contractMetadataError, setContractMetadataError] = useState(null);
+  const [listedNFT, setListedNFT] = useState([]);
 
   const { data: gamesData } = useQuery('games', () => cmsAPI.getAllGames());
 
@@ -82,7 +83,7 @@ const DetailCollection = () => {
   const deleteCollection = async (id) => {
     try {
       await cmsAPI.deleteCollection(id);
-      setIsOpenModal({ type: 'successCollection', visible: true });
+      setIsOpenModal({ type: 'successDeletion', visible: true });
     } catch (error) {
       setIsOpenModal({ type: 'failCollection', visible: true });
     }
@@ -145,6 +146,12 @@ const DetailCollection = () => {
         desc={'New collection category successfully added!'}
       />
     ),
+    successDeletion: (
+      <SuccessCollectionRewarding
+        title={'COLLECTION DELETED!'}
+        desc={'A collection category successfully deleted!'}
+      />
+    ),
     failCollection: (
       <FailCollectionRewarding
         title={'UPDATE FAILED'}
@@ -195,7 +202,7 @@ const DetailCollection = () => {
               className="button"
               onClick={() => {
                 if (address) {
-                  setIsOpenModal({
+                  return setIsOpenModal({
                     type: 'addCollection',
                     visible: true,
                     data: data,
@@ -210,7 +217,16 @@ const DetailCollection = () => {
           <Col>
             <button
               className="button"
-              onClick={() => deletionMutation(data.id)}>
+              onClick={() => {
+                if (listedNFT.length === 0) {
+                  deletionMutation(data.id);
+                  return;
+                }
+
+                message.error(
+                  'You cannot delete this collection because there are still listed NFT'
+                );
+              }}>
               DELETE
             </button>
           </Col>
@@ -219,9 +235,21 @@ const DetailCollection = () => {
     },
   ];
 
+  const getListedNFT = async () => {
+    try {
+      const {
+        data: { data },
+      } = await cmsAPI.getListingProductByGame(`gameId=${id}&sold=false`);
+      setListedNFT(data);
+    } catch (error) {
+      message.error('Error while getting listed product');
+    }
+  };
+
   useEffect(() => {
     if (detailGameData) {
       setCollectionData(detailGameData);
+      getListedNFT();
     }
   }, [id, detailGameData]);
 
