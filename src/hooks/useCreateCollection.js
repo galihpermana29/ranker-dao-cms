@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { message } from 'antd';
 import { useContractWrite, usePrepareContractWrite } from 'wagmi';
@@ -15,8 +15,12 @@ export const useCreateCollection = (
   setContractMetadataError,
   hittingAPICollection
 ) => {
+  const [approvalAddress, setApprovalAddress] = useState({
+    address: '',
+  });
+
   const { config } = usePrepareContractWrite({
-    address: '0x10b8b56d53bfa5e374f38e6c0830bad4ebee33e6',
+    address: approvalAddress.address,
     abi: contractAbi,
     functionName: 'setApprovalForAll',
     args: [
@@ -26,7 +30,7 @@ export const useCreateCollection = (
   });
 
   const {
-    writeAsync: setApprovalForAll,
+    write: setApprovalForAll,
     isLoading,
     isSuccess,
   } = useContractWrite(config);
@@ -49,31 +53,25 @@ export const useCreateCollection = (
         setContractMetadataError
       );
       if (payloadForGettingTheContractName) {
-        const allAsyncApproval = fields.map((data) =>
-          setApprovalForAll({
-            address: data.name,
-            abi: contractAbi,
-            functionName: 'setApprovalForAll',
-            args: [
-              import.meta.env.VITE_LISTING_CONTRACT, // address of listing
-              true, // boolean approve
-            ],
-          })
+        const responsesFromAlchemy = await gettingTheContractMetaData(
+          payloadForGettingTheContractName
         );
 
+        const payload = responsesFromAlchemy.map((d) => ({
+          name: checkContractAddressName(d.name),
+          address: d.address,
+          gameId: game,
+        }));
+
+        fields.forEach((data, idx) => {
+          setTimeout(() => {
+            setApprovalAddress((approvalAddress) => ({
+              address: data.name,
+            }));
+          }, 1000 * idx + idx * 2);
+        });
+
         try {
-          await Promise.all(allAsyncApproval);
-
-          const responsesFromAlchemy = await gettingTheContractMetaData(
-            payloadForGettingTheContractName
-          );
-
-          const payload = responsesFromAlchemy.map((d) => ({
-            name: checkContractAddressName(d.name),
-            address: d.address,
-            gameId: game,
-          }));
-
           if (isNew) await hittingAPICollection(payload);
         } catch (error) {
           return error;
@@ -83,6 +81,21 @@ export const useCreateCollection = (
       setContractMetadataError('Error approval contract collection');
     }
   };
+
+  const interactApproval = async () => {
+    try {
+      setApprovalForAll?.();
+    } catch (error) {
+      console.log(error, 'error');
+      message.error('Blockchain approval function error, try again!');
+    }
+  };
+
+  useEffect(() => {
+    if (approvalAddress.address !== '') {
+      interactApproval();
+    }
+  }, [approvalAddress]);
 
   useEffect(() => {
     if (isSuccess) message.loading('Permission to this collection has granted');

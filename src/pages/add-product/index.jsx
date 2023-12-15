@@ -39,7 +39,6 @@ const AddProduct = () => {
   const [contractPayload, setContractPayload] = useState({
     web3: [], // this is for 721erc
     web2: [],
-    web4: [], //this is for 1155erc
   });
   const [
     nftCollections,
@@ -89,38 +88,10 @@ const AddProduct = () => {
     isLoading,
   } = useContractWrite(config);
 
-  const { config: erc1155Config } = usePrepareContractWrite({
-    address: import.meta.env.VITE_LISTING_CONTRACT,
-    abi: contractAbi,
-    functionName: 'addERC1155Listing',
-    args: [
-      contractPayload.web4[0] ?? '100', //price
-      contractPayload.web4[1] ?? '0xbb234d9a79db8bcb880b7a52a243be2087b70812',
-      contractPayload.web4[2] ?? '2', //token id
-      '1',
-    ],
-    enabled: true,
-  });
-
-  /**
-   * Contract write for adding ERC1155
-   */
-
-  const {
-    write: addERC1155Listing,
-    isSuccess: success1155,
-    isError: error1155,
-    isLoading: loading1155,
-  } = useContractWrite(erc1155Config);
-
-  /**
-   * Read contract for check is approve status from blockchain
-   */
-
   const { refetch: checkIsApproved } = useContractRead({
-    address: contractNftToApprove
-      ? contractNftToApprove
-      : '0xbb234d9a79db8bcb880b7a52a243be2087b70812',
+    address: contractNftToApprove,
+    // ? contractNftToApprove
+    // : '0xbb234d9a79db8bcb880b7a52a243be2087b70812',
     abi: approveAbi,
     functionName: 'isApprovedForAll',
     args: [address, import.meta.env.VITE_LISTING_CONTRACT],
@@ -341,6 +312,8 @@ const AddProduct = () => {
     let collectionAdd = [];
     let newCollection = [];
 
+    data = data.filter((d) => d.tokenType === 'ERC721');
+
     data.forEach((d) => {
       if (collectionAdd.includes(d.contract.address)) return;
       else collectionAdd.push(d.contract.address);
@@ -361,7 +334,7 @@ const AddProduct = () => {
 
     if (isPriceValid) {
       const {
-        payloadWeb3: { erc721, erc1155 },
+        payloadWeb3: { erc721 },
         payloadWeb2,
       } = prepareBatchListing(cart, address);
 
@@ -371,19 +344,6 @@ const AddProduct = () => {
             ...contractPayload,
             web3: [data.address, [...data.data]],
           }));
-        }, 1000 * idx + 1);
-      });
-
-      erc1155.forEach((data, idx) => {
-        setTimeout(() => {
-          data.data.forEach((d, idx) => {
-            setTimeout(() => {
-              setContractPayload((contractPayload) => ({
-                ...contractPayload,
-                web4: [d.price, data.address, d.tokenId],
-              }));
-            }, 1000 * idx + 1);
-          });
         }, 1000 * idx + 1);
       });
 
@@ -400,15 +360,13 @@ const AddProduct = () => {
     try {
       addingListing();
     } catch (error) {
-      message.error('Error blockchain network is busy, try again!');
-    }
-  };
-
-  const interactListing115 = () => {
-    try {
-      addERC1155Listing();
-    } catch (error) {
-      message.error('Error blockchain network is busy, try again!');
+      if (error.message === 'addingListing is not a function') {
+        message.error(
+          'This wallet address is not admin, please contact super admin!'
+        );
+      } else {
+        message.error('Error blockchain network is busy, try again!');
+      }
     }
   };
 
@@ -422,40 +380,24 @@ const AddProduct = () => {
   };
 
   useEffect(() => {
-    if (contractPayload.web3.length > 0 && contractPayload.web4.length > 0) {
-      if (isSuccess && success1155) {
-        createListingProduct();
-      }
-    }
     if (contractPayload.web3.length > 0 && contractPayload.web4.length === 0) {
       if (isSuccess) {
         createListingProduct();
       }
     }
-    if (contractPayload.web3.length === 0 && contractPayload.web4.length > 0) {
-      if (success1155) {
-        createListingProduct();
-      }
-    }
-  }, [isSuccess, success1155]);
+  }, [isSuccess]);
 
   useEffect(() => {
-    if (isError || error1155) {
+    if (isError) {
       setIsOpenModal({ visible: true, type: 'metamaskError' });
     }
-  }, [isError, error1155]);
+  }, [isError]);
 
   useEffect(() => {
-    if (isLoading || loading1155) {
+    if (isLoading) {
       setIsOpenModal({ visible: true, type: 'loading' });
     }
-  }, [isLoading, loading1155]);
-
-  useEffect(() => {
-    if (contractPayload.web4.length > 0) {
-      interactListing115();
-    }
-  }, [contractPayload.web4]);
+  }, [isLoading]);
 
   useEffect(() => {
     if (contractPayload.web3.length > 0) {

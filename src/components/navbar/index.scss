@@ -30,6 +30,11 @@
           color: rgba(235, 225, 110, 0.688) !important;
         }
       }
+
+      div {
+        display: inline-block;
+        cursor: pointer;
+      }
     }
   }
 

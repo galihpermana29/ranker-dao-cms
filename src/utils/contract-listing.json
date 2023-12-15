@@ -36,22 +36,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_pricePerToken",
-        "type": "uint256"
-      },
-      { "internalType": "address", "name": "_contractAddr", "type": "address" },
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "uint256", "name": "_quantity", "type": "uint256" }
-    ],
-    "name": "addERC1155Listing",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       { "internalType": "uint256", "name": "_price", "type": "uint256" },
       { "internalType": "address", "name": "_contractAddr", "type": "address" },
       { "internalType": "uint256", "name": "_tokenId", "type": "uint256" }
@@ -68,6 +52,25 @@
     "name": "addManager",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_walletAddress", "type": "address" }
+    ],
+    "name": "addSuperAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "admins",
+    "outputs": [
+      { "internalType": "bool", "name": "isManager", "type": "bool" },
+      { "internalType": "bool", "name": "isSuper", "type": "bool" }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -98,6 +101,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getIncome",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       { "internalType": "address", "name": "", "type": "address" },
       { "internalType": "uint256", "name": "", "type": "uint256" }
@@ -116,17 +126,6 @@
     "name": "owner",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "_contractAddr", "type": "address" },
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "uint256", "name": "_quantity", "type": "uint256" }
-    ],
-    "name": "purchaseERC1155",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -162,6 +161,15 @@
       { "internalType": "address", "name": "newOwner", "type": "address" }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+    ],
+    "name": "withdrawIncome",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

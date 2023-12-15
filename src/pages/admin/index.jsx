@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { Col, Row } from 'antd';
+import { Col, Row, message } from 'antd';
+import { useContractWrite, usePrepareContractWrite } from 'wagmi';
 
 import cmsAPI from '@/api/cms';
 import { Modal } from '@/components/modal';
@@ -8,6 +9,8 @@ import AddEditAdmin from '@/components/modal/add-edit-admin/add-admin';
 import { AdminRewarding } from '@/components/modal/rewarding';
 import { CustomTable } from '@/components/table';
 import { useStoreAdminData } from '@/state';
+import contractAbi from '@/utils/contract-listing.json';
+
 import './index.scss';
 
 const AllAdmin = () => {
@@ -32,6 +35,9 @@ const AllAdmin = () => {
   ]);
 
   const [isOpenModal, setIsOpenModal] = useState({ visible: false, type: '' });
+  const [approvalAddress, setApprovalAddress] = useState({
+    address: '',
+  });
 
   const getAllActiveAdmins = async () => {
     try {
@@ -109,6 +115,31 @@ const AllAdmin = () => {
     } catch (error) {
       console.log(error, 'error while changing the admin status');
     }
+  };
+
+  const { config: accessConfig } = usePrepareContractWrite({
+    address: import.meta.env.VITE_LISTING_CONTRACT,
+    abi: contractAbi,
+    functionName: 'addManager',
+    args: [approvalAddress.address],
+  });
+
+  const {
+    write: writeAccess,
+    isSuccess,
+    isError,
+    isLoading,
+  } = useContractWrite(accessConfig);
+
+  const handleAddListingAccess = async (form) => {
+    const values = await form.getFieldsValue();
+    values.fields.forEach((data, idx) => {
+      setTimeout(() => {
+        setApprovalAddress(() => ({
+          address: data.address,
+        }));
+      }, 1000 * idx + idx * 2);
+    });
   };
 
   const onChange = (purpose, value, isActive) => {
@@ -189,6 +220,7 @@ const AllAdmin = () => {
       <AddEditAdmin
         initialData={isOpenModal.initialData}
         onClickSubmit={handleEditAddNewAdmin}
+        handleAccess={handleAddListingAccess}
       />
     ),
     successEdit: (
@@ -204,6 +236,27 @@ const AllAdmin = () => {
       />
     ),
   };
+
+  const interactApproval = async () => {
+    try {
+      writeAccess?.();
+    } catch (error) {
+      console.log(error, 'error');
+      message.error('Blockchain approval function error, try again!');
+    }
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      setIsOpenModal({ type: 'successEdit', visible: true });
+    }
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (approvalAddress.address !== '') {
+      interactApproval();
+    }
+  }, [approvalAddress]);
 
   useEffect(() => {
     getAllActiveAdmins();
