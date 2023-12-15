@@ -1,10 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { message } from 'antd';
-import { useCookies } from 'react-cookie';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-
-import cmsAPI from '@/api/cms';
 
 const INITIAL_STATE = {
   onConnect: '',
@@ -23,11 +20,10 @@ const WalletContext = createContext(INITIAL_STATE);
 export const useWalletContext = () => useContext(WalletContext);
 
 export const WalletContextProvider = ({ children }) => {
-  const [cookie] = useCookies(['XSRF-LOCAL-TOKEN']);
-  const loginStatus = JSON.stringify(cookie) !== '{}';
-
   const { connector: activeConnector, isConnected, address } = useAccount();
+
   const { disconnect } = useDisconnect();
+
   const { connect, connectors, errors, isLoading, pendingConnector } =
     useConnect({
       onSuccess(data) {
@@ -49,7 +45,7 @@ export const WalletContextProvider = ({ children }) => {
   const [error, setError] = useState(errors);
 
   useEffect(() => {
-    const handleConnectorUpdate = ({ account, chain }) => {
+    const handleConnectorUpdate = ({ account }) => {
       if (account) {
         const adminWalletAddresses = JSON.parse(
           localStorage.getItem('walletAdresses')
@@ -58,11 +54,7 @@ export const WalletContextProvider = ({ children }) => {
           disconnect();
           setError('WALLET MISSMATCHED');
           throw 'Wallet missmatched';
-        } else {
-          console.log(connectors);
         }
-      } else if (chain) {
-        console.log('new chain', chain);
       }
     };
 
@@ -70,25 +62,6 @@ export const WalletContextProvider = ({ children }) => {
       activeConnector.on('change', handleConnectorUpdate);
     }
   }, [activeConnector]);
-
-  // useEffect(() => {
-  //   const getDetailUser = async () => {
-  //     try {
-  //       const {
-  //         data: { data },
-  //       } = await cmsAPI.getDetailAdmin(3); // hardcoded
-  //       localStorage.setItem(
-  //         'walletAdresses',
-  //         JSON.stringify(data.walletAddresses)
-  //       );
-  //     } catch (error) {
-  //       console.log(error, 'err');
-  //     }
-  //   };
-  //   if (loginStatus) {
-  //     getDetailUser();
-  //   }
-  // }, []);
 
   return (
     <WalletContext.Provider

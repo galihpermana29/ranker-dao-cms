@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Form, Input, message } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 
-const AddEditAdmin = ({ initialData, onClickSubmit }) => {
+const AddEditAdmin = ({ initialData, onClickSubmit, handleAccess }) => {
   const [form] = useForm();
   const [walletInput, setWalletInput] = useState('');
   const [initialStateWallet, setInitialStateWallet] = useState([]);
@@ -191,6 +191,17 @@ const AddEditAdmin = ({ initialData, onClickSubmit }) => {
             {initialData ? 'EDIT' : 'ADD'}
           </button>
         </Form.Item>
+
+        {initialData && (
+          <Form.Item noStyle>
+            <button
+              type="button"
+              onClick={() => handleAccess(form)}
+              className="button access">
+              {'GIVE ACCESS TO LISTING NFT'}
+            </button>
+          </Form.Item>
+        )}
       </Form>
     </div>
   );
