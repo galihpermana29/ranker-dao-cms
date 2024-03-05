@@ -346,7 +346,7 @@ const AddProduct = () => {
           }));
         }, 1000 * idx + 1);
       });
-
+      console.log('PPPPP');
       setContractPayload((contractPayload) => ({
         ...contractPayload,
         web2: payloadWeb2,
@@ -380,7 +380,9 @@ const AddProduct = () => {
   };
 
   useEffect(() => {
-    if (contractPayload.web3.length > 0 && contractPayload.web4.length === 0) {
+    console.log(contractPayload, 'payload??', isSuccess);
+
+    if (contractPayload.web3.length > 0 && contractPayload.web2.length > 0) {
       if (isSuccess) {
         createListingProduct();
       }
